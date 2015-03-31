@@ -1,0 +1,19 @@
+<ion-view view-title="Budgie">
+  <ion-content>
+    <div id="daily" style="margin:20px 0 0 0"></div>
+    <div id="transactions">
+        <div class="row" ng-repeat="transaction in transactions.slice().reverse()">
+            <div class="col col-75">
+                {{ transaction.label }}
+            </div>
+            <div class="col">
+                ${{ transaction.amount / 100 | number:2 }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col col-75">Total purchases</div>
+            <div class="col">${{ getTotal() | number:2 }}</div>
+        </div>
+    </div>
+  </ion-content>
+</ion-view>
