@@ -142,4 +142,112 @@ angular.module('budgie.controllers', ['budgie.config'])
     notify: true });
     });
   }
+})
+
+.controller('GoalCtrl', function($scope, $http, $state, $ionicHistory, ActiveUser, parseConfig) {
+  $scope.goal = {};
+  $scope.goal.amount = "00.00";
+
+    var contributedToBucket;
+    var newContribution = 0;
+    var bucketGoal;
+
+    var dailyBudget;
+    var remainingBudget;
+    var newBudget = 0;
+
+    var currentUser = ActiveUser();
+    $http({
+      method  : 'GET',
+      url     : 'https://api.parse.com/1/users/me',
+      headers : {
+        'X-Parse-Application-Id': parseConfig.appid,
+        'X-Parse-REST-API-Key': parseConfig.rest_key,
+        'X-Parse-Session-Token': currentUser.sessionToken,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    })
+    .success(function(response) {
+      dailyBudget = response.dailyBudget;
+      remainingBudget = response.todaysBudget;
+      newBudget = remainingBudget;
+
+      $scope.remainingBudget = remainingBudget;
+    })
+    .then(function() {
+        return $http({
+          method  : 'POST',
+          url     : 'https://api.parse.com/1/functions/GetUserBuckets',
+          headers : {
+            'X-Parse-Application-Id': parseConfig.appid,
+            'X-Parse-REST-API-Key': parseConfig.rest_key,
+            'X-Parse-Session-Token': currentUser.sessionToken,
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        })
+        .success(function(data) {
+            if(!data.error) {
+                contributedToBucket = data.result.progress;
+                newContribution = contributedToBucket;
+                bucketGoal = data.result.goal;
+
+                $scope.contributedToBucket = contributedToBucket;
+                $scope.bucketName = data.result.title;
+
+                var rp1 = radialProgressSmall(document.getElementById('goal'))
+                        .diameter(150)
+                        .value(contributedToBucket)
+                        .maxValue(bucketGoal)
+                        .render();
+                var rp2 = radialProgressSmall(document.getElementById('budget'))
+                        .diameter(150)
+                        .value(remainingBudget)
+                        .maxValue(dailyBudget)
+                        .innerLabel(remainingBudget)
+                        .render();
+            }
+        });
+    });
+
+    $scope.updateSlider = function(event) {
+        var rp1 = radialProgressSmall(document.getElementById('goal'))
+            .diameter(150)
+            .currentArc(parseFloat(newContribution / bucketGoal) * (2*Math.PI))
+            .value(parseInt($scope.goal.amount) + parseInt(contributedToBucket))
+            .maxValue(parseInt(bucketGoal))
+            .render();
+        newContribution = parseInt($scope.goal.amount) + parseInt(contributedToBucket);
+        var rp2 = radialProgressSmall(document.getElementById('budget'))
+            .diameter(150)
+            .currentArc(parseFloat(newBudget / dailyBudget) * (2*Math.PI))
+            .currentArc2(0)
+            .value(remainingBudget - parseInt($scope.goal.amount))
+            .maxValue(dailyBudget)
+            .innerLabel(remainingBudget)
+            .render();
+        newBudget = remainingBudget - parseInt($scope.goal.amount);
+    }
+
+    $scope.processForm = function() {
+      $http({
+        method  : 'POST',
+        url     : 'https://api.parse.com/1/functions/AddBucketContribution',
+        data    : 'amount=' + $scope.goal.amount / 100,
+        headers : {
+          'X-Parse-Application-Id': parseConfig.appid,
+          'X-Parse-REST-API-Key': parseConfig.rest_key,
+          'X-Parse-Session-Token': currentUser.sessionToken,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      })
+      .success(function(response, status) {
+        if(status == 200) {
+            $ionicHistory.nextViewOptions({
+         disableBack: true
+      });
+      $state.go('app.daily', { transactions: [] }, { reload: true, inherit: false,
+    notify: true });
+        }
+      });
+    }
 });

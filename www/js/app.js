@@ -8,8 +8,8 @@ angular.module('budgie', ['ionic', 'budgie.controllers', 'budgie.services', 'bud
       cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
     }
     if (window.StatusBar) {
-      // org.apache.cordova.statusbar required
-      StatusBar.styleDefault();
+      StatusBar.overlaysWebView(true);
+      StatusBar.style(1);
     }
   });
 })
@@ -49,7 +49,8 @@ angular.module('budgie', ['ionic', 'budgie.controllers', 'budgie.services', 'bud
     url: "/goals",
     views: {
       'menuContent': {
-        templateUrl: "templates/goals.html"
+        templateUrl: "templates/goals.html",
+        controller: 'GoalCtrl'
       }
     }
   });

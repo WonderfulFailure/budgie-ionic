@@ -1,5 +1,37 @@
-<ion-view view-title="Goals">
-  <ion-content>
-    <h1>Goals Screen</h1>
-  </ion-content>
+<ion-view view-title="Save Money">
+    <ion-content>
+        <div class="row">
+            <div style="margin:0 auto;width:275px;">
+                <div class="padding">
+                    <div id="budget"></div>
+                    <div id="goal"></div>
+                </div>
+            </div>
+        </div>
+        <div class="bucket-labels">
+            <div class="row">
+                <div class="col col-offset-20 col-20">
+                    Today's balance
+                </div>
+                <div class="col col-offset-20 col-20">
+                    {{ bucketName }}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="contribution text-center">${{ goal.amount / 100 | number: 2 }}</div>
+            </div>
+        </div>
+        <form ng-submit="processForm()">
+            <div class="row">
+                <div class="col text-center">
+                    <input type="range" style="border:none;-webkit-box-shadow:none;width:80%;margin:0 auto;" class="form-control" min="0" max="{{ remainingBudget }}" value="100" step="1" ng-change="updateSlider($event)" ng-model="goal.amount">
+                </div>
+            </div>
+            <div class="padding">
+                <input type="submit" class="button button-calm button-block button-outline" value="Save" />
+            </div>
+        </form>
+    </ion-content>
 </ion-view>
