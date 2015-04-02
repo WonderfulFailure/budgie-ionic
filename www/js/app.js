@@ -1,4 +1,4 @@
-angular.module('budgie', ['ionic', 'budgie.controllers', 'budgie.services', 'budgie.config'])
+angular.module('budgie', ['ionic', 'angular-progress-arc', 'budgie.controllers', 'budgie.services', 'budgie.config'])
 
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {

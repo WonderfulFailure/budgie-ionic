@@ -1,9 +1,9 @@
 <ion-view view-title="Budgie">
   <ion-content>
     <div id="daily" style="margin:20px 0 0 0"></div>
-    <div id="transactions">
+    <div id="transactions" ng-show="transactions.length >= 0">
         <div class="row" ng-repeat="transaction in transactions.slice().reverse()">
-            <div class="col col-75">
+            <div class="col col-67 col-offset-10">
                 {{ transaction.label }}
             </div>
             <div class="col">
@@ -11,7 +11,7 @@
             </div>
         </div>
         <div class="row">
-            <div class="col col-75">Total purchases</div>
+            <div class="col col-67 col-offset-10">Total purchases</div>
             <div class="col">${{ getTotal() | number:2 }}</div>
         </div>
     </div>

@@ -64,6 +64,13 @@ angular.module('budgie.controllers', ['budgie.config'])
       })
       .success(function(response) {
         $scope.transactions = response.result;
+        $scope.getTotal = function() {
+          var total = 0;
+          for(var i = 0; i < $scope.transactions.length; i++){
+              total += $scope.transactions[i].amount / 100;
+          }
+          return total;
+        }
       })
       .then(function() {
         return $http({
