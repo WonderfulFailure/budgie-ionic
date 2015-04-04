@@ -26,3 +26,6 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 
 @import "old.app.scss";
 
+input[type="tel"] {
+    text-align: right;
+}

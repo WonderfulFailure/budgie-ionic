@@ -7670,3 +7670,6 @@ input[type=range]:focus::-webkit-slider-runnable-track {
 
 .bucket-labels {
   font-weight: 200; }
+
+input[type="tel"] {
+  text-align: right; }

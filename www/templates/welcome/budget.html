@@ -22,8 +22,8 @@
     <div class="padding">
       <div ng-show="welcome.customToggle">
         <label class="item item-input">
-          <span class="input-label">$</span>
-          <input type="text" class="form-control" placeholder="00.00" ng-model="welcome.customBudgetAmount" />
+            <i class="icon ion-social-usd"></i>
+            <input type="tel" id="spend" placeholder="00.00" ng-model="welcome.customBudgetAmount" ui-number-mask="2" ui-hide-group-sep />
         </label>
       </div>
     </div>

@@ -1,6 +1,6 @@
 angular.module('budgie.controllers', ['budgie.config'])
 
-.controller('AppCtrl', function($scope, $rootScope, $ionicModal, $ionicPopup, $http, $location, $localStorage, ActiveUser, parseConfig) {
+.controller('AppCtrl', function($scope, $rootScope, $ionicModal, $ionicPopup, $ionicHistory, $state, $http, $location, $localStorage, ActiveUser, parseConfig) {
 
   $rootScope.sideMenuVisible = true;
 
@@ -49,7 +49,29 @@ angular.module('budgie.controllers', ['budgie.config'])
         });
       });
     }
-  };
+  }
+
+  $scope.goToWelcome = function() {
+    $ionicHistory.nextViewOptions({
+      disableAnimate: true,
+      disableBack: true
+    });
+    $rootScope.sideMenuVisible = false;
+    $state.go('app.welcome.budget', {}, { reload: true, inherit: false, notify: true });
+    $scope.modal.hide();
+    $localStorage.completedWelcomeProcess = false;
+  }
+
+  $scope.doLogout = function() {
+    localStorage.removeItem('ngStorage-sessionToken');
+    ActiveUser(null);
+    $ionicHistory.nextViewOptions({
+      disableAnimate: true,
+      disableBack: true
+    });
+    $state.go('app.daily', {}, { reload: true, inherit: false, notify: true });
+    $scope.showLogin();
+  }
 })
 
 .controller('DailyCtrl', function($scope, $rootScope, $http, $state, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicPopup, ActiveUser, parseConfig, IntercomAuthenticate, IntercomTrackEvent) {
@@ -125,7 +147,7 @@ angular.module('budgie.controllers', ['budgie.config'])
     var currentUser = ActiveUser();
       $scope.daily.mB = parseFloat($scope.daily.monthlyBudget / 100).toFixed(2);
       $ionicPopup.show({
-        template: '<input type="text" ng-model="daily.mB">',
+        template: '<label class="item item-input"><i class="icon ion-social-usd"></i><input type="tel" placeholder="00.00" ng-model="daily.mB" ui-number-mask="2" ui-hide-group-sep /></label>',
         title: 'Enter your monthly budget',
         subTitle: 'Just dollars, please.',
         scope: $scope,
@@ -161,7 +183,7 @@ angular.module('budgie.controllers', ['budgie.config'])
           }).success(function() {
             $ionicPopup.alert({
               title: 'Updated!',
-               template: 'Starting tomorrow, you\'ll get $' + parseFloat(newMonthlyBudget / 30).toFixed(2) + ' per day.  Sweet.',
+               template: 'Starting tomorrow, you\'ll get <strong>$' + parseFloat(newMonthlyBudget / 30).toFixed(2) + '</strong> per day.  Sweet.',
                buttons: [{ text: 'Bwraaak!', type: 'button-calm' }]
              });
             IntercomTrackEvent('changed-settings');
@@ -182,21 +204,6 @@ angular.module('budgie.controllers', ['budgie.config'])
 
   $scope.spend = { amount: '' };
   $scope.amountCents = "";
-
-  $scope.updateDollars = function(event) {
-    var num = event.which || event.keyCode;
-    if(num > 47 && num < 58) {
-        $scope.amountCents = $scope.amountCents.concat(String.fromCharCode(num));
-    }
-    else if(num == 8) {
-        $scope.amountCents = $scope.amountCents.substring(0, $scope.amountCents.length - 1);
-    }
-
-    var amount = parseFloat($scope.amountCents / 100).toFixed(2);
-    if(String(amount).length <= 4)
-        amount = 0 + String(amount);
-    $scope.spend.amount = amount;
-  }
 
   $scope.spendMoney = function() {
     var currentUser = ActiveUser();
@@ -234,7 +241,7 @@ angular.module('budgie.controllers', ['budgie.config'])
       $ionicPopup.alert({
         title: 'Did you know that...',
          template: 'You can change your goal value and title by tapping on them.',
-         buttons: [{ text: 'Got it!', type: 'button-calm' }]
+         buttons: [{ text: 'Now I know!', type: 'button-calm' }]
        })
       .then(function() {
         $localStorage.seenSettingsPopup = true;
@@ -387,7 +394,7 @@ angular.module('budgie.controllers', ['budgie.config'])
     $scope.changeBucketGoal = function() {
       $scope.goal.bucketGoal = parseFloat(bucketGoal / 100).toFixed(2);
       $ionicPopup.show({
-        template: '<input type="text" ng-model="goal.bucketGoal">',
+        template: '<label class="item item-input"><i class="icon ion-social-usd"></i><input type="tel" placeholder="00.00" ng-model="goal.bucketGoal" ui-number-mask="2" ui-hide-group-sep /></label>',
         title: 'Enter new Goal',
         subTitle: 'Just dollars, please.',
         scope: $scope,
