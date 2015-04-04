@@ -1,0 +1,27 @@
+<ion-view view-title="Set a goal">
+  <ion-content>
+    <div class="padding">
+        What's one of your goals?  This could be anything from buying a new video game to saving up for a house!  You can change this later.
+    </div>
+    <div class="padding">
+        What I really want is...
+    </div>
+    <div class="padding-horizontal">
+        <label class="item item-input">
+            <input type="text" class="form-control" placeholder="Taylor Swift concert tickets" ng-model="welcome.bucketTitle" />
+        </label>
+    </div>
+    <div class="padding">
+        It would probably cost about...
+    </div>
+    <div class="padding-horizontal">
+        <label class="item item-input">
+            <input type="text" class="form-control" placeholder="100.00" ng-model="welcome.bucketGoal" />
+        </label>
+    </div>
+    <div class="padding"></div>
+    <div class="padding-horizontal">
+      <input type="submit" class="button button-calm button-block button-outline" ng-click="processGoalForm()" value="One more step"/>
+    </div>
+  </ion-content>
+</ion-view>

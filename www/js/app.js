@@ -53,6 +53,47 @@ angular.module('budgie', ['ionic', 'angular-progress-arc', 'budgie.controllers',
         controller: 'GoalCtrl'
       }
     }
+  })
+
+  .state('app.welcome', {
+    url: "/welcome",
+    abstract: true,
+    views: {
+      'menuContent': {
+        templateUrl: "templates/welcome/welcome.html",
+        controller: 'WelcomeCtrl'
+      }
+    }
+  })
+
+  .state('app.welcome.budget', {
+    url: "/budget",
+    views: {
+      'welcomeContent': {
+        templateUrl: "templates/welcome/budget.html",
+        controller: 'WelcomeCtrl'
+      }
+    }
+  })
+
+  .state('app.welcome.goals', {
+    url: "/goals/:monthlyBudget",
+    views: {
+      'welcomeContent': {
+        templateUrl: "templates/welcome/goals.html",
+        controller: 'WelcomeCtrl'
+      }
+    }
+  })
+
+  .state('app.welcome.signup', {
+    url: "/signup/:monthlyBudget/:bucketGoal/:bucketTitle",
+    views: {
+      'welcomeContent': {
+        templateUrl: "templates/welcome/signup.html",
+        controller: 'WelcomeCtrl'
+      }
+    }
   });
   // if none of the above states are matched, use this as the fallback
   $urlRouterProvider.otherwise('/app/daily');

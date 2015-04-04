@@ -4,7 +4,7 @@
             <div style="margin:0 auto;width:275px;">
                 <div class="padding">
                     <div id="budget"></div>
-                    <div id="goal"></div>
+                    <div id="goal" ng-click="changeBucketGoal()"></div>
                 </div>
             </div>
         </div>
@@ -14,7 +14,9 @@
                     Today's balance
                 </div>
                 <div class="col col-offset-20 col-20">
-                    {{ bucketName }}
+                    <span ng-click="changeBucketName()">
+                        {{ goal.bucketName }}
+                    </span>
                 </div>
             </div>
         </div>

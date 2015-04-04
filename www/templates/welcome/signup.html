@@ -1,0 +1,18 @@
+<ion-view view-title="Last step">
+  <ion-content>
+    <div class="padding-top padding-right padding-left">
+        Finally we just need some standard registration stuff.  We won't spam you, and that's a promise you can count on.  Budgie isn't like that.
+    </div>
+    <div class="list list-inset">
+        <label class="item item-input">
+            <input type="email" name="username" placeholder="Email address" ng-model="welcome.username" />
+        </label>
+        <label class="item item-input">
+            <input type="password" name="password" placeholder="Password" ng-model="welcome.password" />
+        </label>
+    </div>
+    <div class="padding-horizontal">
+      <input type="submit" class="button button-calm button-block button-outline" ng-click="processSignupForm()" value="Start Saving"/>
+    </div>
+  </ion-content>
+</ion-view>

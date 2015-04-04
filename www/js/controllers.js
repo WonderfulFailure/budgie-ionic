@@ -1,6 +1,9 @@
 angular.module('budgie.controllers', ['budgie.config'])
 
-.controller('AppCtrl', function($scope, $ionicModal, $ionicPopup, $http, $location, $localStorage, ActiveUser, parseConfig) {
+.controller('AppCtrl', function($scope, $rootScope, $ionicModal, $ionicPopup, $http, $location, $localStorage, ActiveUser, parseConfig) {
+
+  $rootScope.sideMenuVisible = true;
+
   // Form data for the login modal
   $scope.loginData = {};
 
@@ -14,8 +17,10 @@ angular.module('budgie.controllers', ['budgie.config'])
     $ionicModal.fromTemplateUrl('templates/login.html', {
       scope: $scope
     }).then(function(modal) {
-      $scope.modal = modal;
-      $scope.modal.show();
+      if($localStorage.completedWelcomeProcess) {
+        $scope.modal = modal;
+        $scope.modal.show();
+      }
     });
   };
 
@@ -47,7 +52,23 @@ angular.module('budgie.controllers', ['budgie.config'])
   };
 })
 
-.controller('DailyCtrl', function($scope, $http, ActiveUser, parseConfig) {
+.controller('DailyCtrl', function($scope, $rootScope, $http, $state, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicPopup, ActiveUser, parseConfig, IntercomAuthenticate, IntercomTrackEvent) {
+
+  $scope.daily = {};
+
+  $rootScope.sideMenuVisible = true;
+  $ionicSideMenuDelegate.canDragContent(true);
+
+  // Show the welcome wizard on first run
+  if(!$localStorage.completedWelcomeProcess) {
+    $rootScope.sideMenuVisible = false;
+    $ionicSideMenuDelegate.canDragContent(false);
+    $ionicHistory.nextViewOptions({
+      disableAnimate: true,
+      disableBack: true
+    });
+    $state.go('app.welcome.budget', {}, { reload: true, inherit: false, notify: true });
+  }
 
   $scope.getTransactions = function() {
     var currentUser = ActiveUser();
@@ -84,6 +105,9 @@ angular.module('budgie.controllers', ['budgie.config'])
           }
         })
         .success(function(response) {
+          IntercomAuthenticate(response.email);
+          $scope.daily.monthlyBudget = response.monthlyBudget;
+          $scope.daily.todaysBudget = response.todaysBudget;
           var rp1 = radialProgress(document.getElementById('daily'))
                     .diameter(300)
                     .value(response.todaysBudget)
@@ -97,6 +121,55 @@ angular.module('budgie.controllers', ['budgie.config'])
     }
   }
 
+  $scope.changeMonthlyBudget = function() {
+    var currentUser = ActiveUser();
+      $scope.daily.mB = parseFloat($scope.daily.monthlyBudget / 100).toFixed(2);
+      $ionicPopup.show({
+        template: '<input type="text" ng-model="daily.mB">',
+        title: 'Enter your monthly budget',
+        subTitle: 'Just dollars, please.',
+        scope: $scope,
+        buttons: [
+          { text: 'Cancel' },
+          {
+            text: '<b>Save</b>',
+            type: 'button-calm',
+            onTap: function(e) {
+              if (!$scope.daily.mB) {
+                //don't allow the user to close unless he enters wifi password
+                e.preventDefault();
+              } else {
+                return $scope.daily.mB;
+              }
+            }
+          }
+        ]
+      })
+      .then(function(newMonthlyBudget) {
+        if(newMonthlyBudget) {
+          $scope.daily.monthlyBudget = newMonthlyBudget * 100;
+          $http({
+            method  : 'POST',
+            url     : 'https://api.parse.com/1/functions/UpdateUserSettings',
+            data    : 'monthlyBudget=' + newMonthlyBudget * 100,
+            headers : {
+              'X-Parse-Application-Id': parseConfig.appid,
+              'X-Parse-REST-API-Key': parseConfig.rest_key,
+              'X-Parse-Session-Token': currentUser.sessionToken,
+              'Content-Type': 'application/x-www-form-urlencoded'
+            }
+          }).success(function() {
+            $ionicPopup.alert({
+              title: 'Updated!',
+               template: 'Starting tomorrow, you\'ll get $' + parseFloat(newMonthlyBudget / 30).toFixed(2) + ' per day.  Sweet.',
+               buttons: [{ text: 'Bwraaak!', type: 'button-calm' }]
+             });
+            IntercomTrackEvent('changed-settings');
+          });
+        }
+      });
+    }
+
   // Get fresh transactions after logging in
   $scope.$on('modal.hidden', function(modal) {
     $scope.getTransactions();
@@ -105,7 +178,7 @@ angular.module('budgie.controllers', ['budgie.config'])
   $scope.getTransactions();
 })
 
-.controller('SpendCtrl', function($scope, $http, $state, $ionicHistory, ActiveUser, parseConfig) {
+.controller('SpendCtrl', function($scope, $http, $state, $localStorage, $ionicHistory, $ionicPopup, ActiveUser, parseConfig, IntercomTrackEvent) {
 
   $scope.spend = { amount: '' };
   $scope.amountCents = "";
@@ -142,18 +215,31 @@ angular.module('budgie.controllers', ['budgie.config'])
       $scope.spend.amount = '';
       $scope.amountCents = '';
 
+      IntercomTrackEvent('spent-money');
+
       $ionicHistory.nextViewOptions({
          disableBack: true
       });
-      $state.go('app.daily', { transactions: [] }, { reload: true, inherit: false,
-    notify: true });
+      $state.go('app.daily', { transactions: [] }, { reload: true, inherit: false, notify: true });
     });
   }
 })
 
-.controller('GoalCtrl', function($scope, $http, $state, $ionicHistory, ActiveUser, parseConfig) {
+.controller('GoalCtrl', function($scope, $http, $state, $localStorage, $ionicHistory, $ionicPopup, ActiveUser, parseConfig, IntercomTrackEvent) {
   $scope.goal = {};
   $scope.goal.amount = "00.00";
+
+  if(!$localStorage.seenSettingsPopup) {
+    // An alert dialog
+      $ionicPopup.alert({
+        title: 'Did you know that...',
+         template: 'You can change your goal value and title by tapping on them.',
+         buttons: [{ text: 'Got it!', type: 'button-calm' }]
+       })
+      .then(function() {
+        $localStorage.seenSettingsPopup = true;
+      });
+  }
 
     var contributedToBucket;
     var newContribution = 0;
@@ -198,8 +284,8 @@ angular.module('budgie.controllers', ['budgie.config'])
                 newContribution = contributedToBucket;
                 bucketGoal = data.result.goal;
 
-                $scope.contributedToBucket = contributedToBucket;
-                $scope.bucketName = data.result.title;
+                $scope.goal.contributedToBucket = contributedToBucket;
+                $scope.goal.bucketName = data.result.title;
 
                 var rp1 = radialProgressSmall(document.getElementById('goal'))
                         .diameter(150)
@@ -249,12 +335,180 @@ angular.module('budgie.controllers', ['budgie.config'])
       })
       .success(function(response, status) {
         if(status == 200) {
-            $ionicHistory.nextViewOptions({
-         disableBack: true
-      });
-      $state.go('app.daily', { transactions: [] }, { reload: true, inherit: false,
-    notify: true });
+          IntercomTrackEvent('saved-money');
+          $ionicHistory.nextViewOptions({
+            disableBack: true
+          });
+          $state.go('app.daily', { transactions: [] }, { reload: true, inherit: false, notify: true });
         }
       });
     }
+
+    $scope.changeBucketName = function() {
+      $ionicPopup.show({
+        template: '<input type="text" ng-model="goal.bucketName">',
+        title: 'Enter new Goal Name',
+        subTitle: 'Just text, please.',
+        scope: $scope,
+        buttons: [
+          { text: 'Cancel' },
+          {
+            text: '<b>Save</b>',
+            type: 'button-calm',
+            onTap: function(e) {
+              if (!$scope.goal.bucketName) {
+                //don't allow the user to close unless he enters wifi password
+                e.preventDefault();
+              } else {
+                return $scope.goal.bucketName;
+              }
+            }
+          }
+        ]
+      })
+      .then(function(bucketName) {
+        if(bucketName) {
+          $http({
+            method  : 'POST',
+            url     : 'https://api.parse.com/1/functions/UpdateUserSettings',
+            data    : 'bucketName=' + bucketName,
+            headers : {
+              'X-Parse-Application-Id': parseConfig.appid,
+              'X-Parse-REST-API-Key': parseConfig.rest_key,
+              'X-Parse-Session-Token': currentUser.sessionToken,
+              'Content-Type': 'application/x-www-form-urlencoded'
+            }
+          });
+          IntercomTrackEvent('changed-settings', {'bucket-name': bucketName});
+        }
+      });
+    }
+
+    $scope.changeBucketGoal = function() {
+      $scope.goal.bucketGoal = parseFloat(bucketGoal / 100).toFixed(2);
+      $ionicPopup.show({
+        template: '<input type="text" ng-model="goal.bucketGoal">',
+        title: 'Enter new Goal',
+        subTitle: 'Just dollars, please.',
+        scope: $scope,
+        buttons: [
+          { text: 'Cancel' },
+          {
+            text: '<b>Save</b>',
+            type: 'button-calm',
+            onTap: function(e) {
+              if (!$scope.goal.bucketGoal) {
+                //don't allow the user to close unless he enters wifi password
+                e.preventDefault();
+              } else {
+                return $scope.goal.bucketGoal;
+              }
+            }
+          }
+        ]
+      })
+      .then(function(newBucketGoal) {
+        if(newBucketGoal) {
+          bucketGoal = newBucketGoal * 100;
+          $scope.updateSlider();
+          $http({
+            method  : 'POST',
+            url     : 'https://api.parse.com/1/functions/UpdateUserSettings',
+            data    : 'bucketGoal=' + newBucketGoal * 100,
+            headers : {
+              'X-Parse-Application-Id': parseConfig.appid,
+              'X-Parse-REST-API-Key': parseConfig.rest_key,
+              'X-Parse-Session-Token': currentUser.sessionToken,
+              'Content-Type': 'application/x-www-form-urlencoded'
+            }
+          });
+          IntercomTrackEvent('changed-settings');
+        }
+      });
+    }
+})
+
+.controller('WelcomeCtrl', function($scope, $rootScope, $http, $state, $stateParams, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicViewSwitcher, ActiveUser, parseConfig, IntercomTrackEvent) {
+
+  $rootScope.sideMenuVisible = false;
+  $ionicSideMenuDelegate.canDragContent(false);
+
+  $scope.welcome = {};
+
+  $scope.welcome.frugal = '25000';
+  $scope.welcome.moderate = '40000';
+  $scope.welcome.lavish = '50000';
+
+  if($stateParams.monthlyBudget)
+    $scope.welcome.monthlyBudget = $stateParams.monthlyBudget;
+
+  if($stateParams.bucketGoal)
+    $scope.welcome.bucketGoal = $stateParams.bucketGoal;
+
+  if($stateParams.bucketTitle)
+    $scope.welcome.bucketTitle = $stateParams.bucketTitle;
+
+  $scope.processSetupForm = function(welcomeForm) {
+    var monthlyBudget;
+
+    if($scope.welcome.customBudgetAmount)
+      monthlyBudget = $scope.welcome.customBudgetAmount * 100;
+    else
+      monthlyBudget = $scope.welcome.spendingHabits;
+    $state.go('app.welcome.goals', { monthlyBudget: monthlyBudget });
+  }
+
+  $scope.processGoalForm = function() {
+    $state.go('app.welcome.signup', { monthlyBudget: $scope.welcome.monthlyBudget, bucketGoal: $scope.welcome.bucketGoal, bucketTitle: $scope.welcome.bucketTitle });
+  }
+
+  $scope.processSignupForm = function() {
+    $scope.welcome.email = $scope.welcome.username;
+    $scope.welcome.monthlyBudget = parseInt($scope.welcome.monthlyBudget);
+    $scope.welcome.dailyBudget = parseInt($scope.welcome.monthlyBudget / 30);
+    $scope.welcome.todaysBudget = parseInt($scope.welcome.monthlyBudget / 30);
+    $scope.welcome.bucketGoal = String(parseInt($scope.welcome.bucketGoal * 100));
+
+    $http({
+      method  : 'POST',
+      url     : 'https://api.parse.com/1/users',
+      data    : JSON.stringify($scope.welcome),
+      headers : {
+        'X-Parse-Application-Id': parseConfig.appid,
+        'X-Parse-REST-API-Key': parseConfig.rest_key,
+        'Content-Type': 'application/json'
+      }
+    })
+    .success(function(result) {
+      ActiveUser(result);
+
+      $http({
+        method  : 'POST',
+        url     : 'https://api.parse.com/1/functions/UpdateUserSettings',
+        data    : 'bucketName=' + $scope.welcome.bucketTitle + "&bucketGoal=" + $scope.welcome.bucketGoal,
+        headers : {
+          'X-Parse-Application-Id': parseConfig.appid,
+          'X-Parse-REST-API-Key': parseConfig.rest_key,
+          'X-Parse-Session-Token': result.sessionToken,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      })
+      .success(function(result) {
+        $localStorage.completedWelcomeProcess = true;
+        $ionicHistory.nextViewOptions({
+          disableBack: true
+        });
+        $state.go('app.daily', {  }, { reload: true, inherit: false, notify: true });
+      });
+    });
+  }
+
+  $scope.skipWelcome = function() {
+    $localStorage.completedWelcomeProcess = true;
+    $ionicHistory.nextViewOptions({
+      disableBack: true
+    });
+    $state.go('app.daily', {  }, { reload: true, inherit: false, notify: true });
+  }
+
 });

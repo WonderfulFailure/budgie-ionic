@@ -1,6 +1,6 @@
 <ion-view view-title="Budgie">
   <ion-content>
-    <div id="daily" style="margin:20px 0 0 0"></div>
+    <div id="daily" style="margin:20px 0 0 0" ng-click="changeMonthlyBudget()"></div>
     <div id="transactions" ng-show="transactions.length >= 0">
         <div class="row" ng-repeat="transaction in transactions.slice().reverse()">
             <div class="col col-67 col-offset-10">

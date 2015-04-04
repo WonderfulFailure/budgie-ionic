@@ -1,0 +1,36 @@
+<ion-view view-title="Welcome to Budgie">
+  <ion-content>
+    <div class="padding">
+      <p>Before you get your daily allowance, we just need to know how you want to live your life. You can change this later. Bwraaaak!</p>
+    </div>
+    <div class="padding">
+      <p>On average, I want to spend per month...</p>
+    </div>
+    <form name="welcomeForm">
+    <div class="row">
+      <div class="button-bar" ng-init="welcome.spendingHabits = welcome.moderate">
+        <a class="button button-calm button-outline" ng-class="{ 'active': welcome.spendingHabits == welcome.frugal }" ng-click="welcome.spendingHabits = welcome.frugal">$250</a>
+        <a class="button button-calm button-outline" ng-class="{ 'active': welcome.spendingHabits == welcome.moderate }" ng-click="welcome.spendingHabits = welcome.moderate">$400</a>
+        <a class="button button-calm button-outline" ng-class="{ 'active': welcome.spendingHabits == welcome.lavish }" ng-click="welcome.spendingHabits = welcome.lavish">$500</a>
+      </div>
+    </div>
+    <div class="padding text-center">
+      <button class="button button-small button-light button-outline" ng-click="welcome.customToggle = !welcome.customToggle; welcome.customBudgetAmount = ''">
+        custom...
+      </button>
+    </div>
+    <div class="padding">
+      <div ng-show="welcome.customToggle">
+        <label class="item item-input">
+          <span class="input-label">$</span>
+          <input type="text" class="form-control" placeholder="00.00" ng-model="welcome.customBudgetAmount" />
+        </label>
+      </div>
+    </div>
+    <div class="padding">
+      <input type="submit" class="button button-calm button-block button-outline" ng-click="processSetupForm(welcomeForm)" value="Next"/>
+      <input type="submit" class="button button-block button-outline" ng-click="skipWelcome()" value="Skip this" />
+    </div>
+    </form>
+  </ion-content>
+</ion-view>
