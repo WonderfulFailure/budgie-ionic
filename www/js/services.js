@@ -45,7 +45,7 @@ angular.module('budgie.services', ['ngStorage'])
     return function(userEmail) {
        Intercom('boot', {
           app_id: "ay3p9jeb",
-          user_id: userEmail,
+          email: userEmail,
           last_request_at: Date.now
         });
     }
