@@ -54,9 +54,15 @@ angular.module('budgie.services', ['ngStorage'])
     }
 }])
 
-.factory('IntercomTrackEvent', ['$window', 'ActiveUser', function(win, ActiveUser) {
+.factory('IntercomTrackEvent', ['$window', function($window) {
     return function(eventName, metadata) {
         if(metadata === undefined) metadata = {};
         Intercom('trackEvent', eventName, metadata);
+    }
+}])
+
+.factory('IntercomLogout', ['$window', function(win) {
+    return function() {
+       Intercom('shutdown');
     }
 }]);

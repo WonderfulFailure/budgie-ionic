@@ -1,6 +1,6 @@
 angular.module('budgie.controllers', ['budgie.config'])
 
-.controller('AppCtrl', function($scope, $rootScope, $ionicModal, $ionicPopup, $ionicHistory, $state, $http, $location, $localStorage, $window, ActiveUser, parseConfig) {
+.controller('AppCtrl', function($scope, $rootScope, $ionicModal, $ionicPopup, $ionicHistory, $state, $http, $location, $localStorage, $window, ActiveUser, parseConfig, IntercomLogout) {
 
   $rootScope.sideMenuVisible = true;
 
@@ -71,6 +71,7 @@ angular.module('budgie.controllers', ['budgie.config'])
     $localStorage.sessionToken = null;
     localStorage.removeItem('ngStorage-sessionToken');
     $scope.loginData = {};
+    IntercomLogout();
     ActiveUser(null);
     $ionicHistory.nextViewOptions({
       disableAnimate: true,
