@@ -2,7 +2,7 @@
   <ion-content>
     <form ng-submit="spendMoney()">
         <div class="list list-inset">
-            <label class="item item-input">
+            <label class="item item-input" focus-after-load>
                 <i class="icon ion-social-usd"></i>
                 <input type="tel" id="spend" placeholder="00.00" ng-model="spend.amount" ui-number-mask="2" ui-hide-group-sep />
             </label>

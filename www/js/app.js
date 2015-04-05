@@ -1,4 +1,4 @@
-angular.module('budgie', ['ionic', 'angular-progress-arc', 'ui.utils.masks', 'budgie.controllers', 'budgie.services', 'budgie.config'])
+angular.module('budgie', ['ionic', 'angular-progress-arc', 'ui.utils.masks', 'budgie.controllers', 'budgie.services', 'budgie.directives', 'budgie.config'])
 
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {
@@ -36,6 +36,7 @@ angular.module('budgie', ['ionic', 'angular-progress-arc', 'ui.utils.masks', 'bu
   })
 
   .state('app.spend', {
+    cache: false,
     url: "/spend",
     views: {
       'menuContent': {

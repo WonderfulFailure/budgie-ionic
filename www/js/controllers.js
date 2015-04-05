@@ -1,6 +1,6 @@
 angular.module('budgie.controllers', ['budgie.config'])
 
-.controller('AppCtrl', function($scope, $rootScope, $ionicModal, $ionicPopup, $ionicHistory, $state, $http, $location, $localStorage, ActiveUser, parseConfig) {
+.controller('AppCtrl', function($scope, $rootScope, $ionicModal, $ionicPopup, $ionicHistory, $state, $http, $location, $localStorage, $window, ActiveUser, parseConfig) {
 
   $rootScope.sideMenuVisible = true;
 
@@ -70,7 +70,7 @@ angular.module('budgie.controllers', ['budgie.config'])
       disableBack: true
     });
     $state.go('app.daily', {}, { reload: true, inherit: false, notify: true });
-    $scope.showLogin();
+    $window.location.reload(true);
   }
 })
 
@@ -186,7 +186,7 @@ angular.module('budgie.controllers', ['budgie.config'])
                template: 'Starting tomorrow, you\'ll get <strong>$' + parseFloat(newMonthlyBudget / 30).toFixed(2) + '</strong> per day.  Sweet.',
                buttons: [{ text: 'Bwraaak!', type: 'button-calm' }]
              });
-            IntercomTrackEvent('changed-settings');
+            IntercomTrackEvent('changed-settings', {'setting': 'Monthly Budget'});
           });
         }
       });
@@ -353,7 +353,7 @@ angular.module('budgie.controllers', ['budgie.config'])
 
     $scope.changeBucketName = function() {
       $ionicPopup.show({
-        template: '<input type="text" ng-model="goal.bucketName">',
+        template: '<label class="item item-input"><input type="text" ng-model="goal.bucketName"></label>',
         title: 'Enter new Goal Name',
         subTitle: 'Just text, please.',
         scope: $scope,
@@ -386,7 +386,7 @@ angular.module('budgie.controllers', ['budgie.config'])
               'Content-Type': 'application/x-www-form-urlencoded'
             }
           });
-          IntercomTrackEvent('changed-settings', {'bucket-name': bucketName});
+          IntercomTrackEvent('changed-settings', {'setting': 'Goal Title', 'Goal Title': bucketName});
         }
       });
     }
@@ -429,7 +429,7 @@ angular.module('budgie.controllers', ['budgie.config'])
               'Content-Type': 'application/x-www-form-urlencoded'
             }
           });
-          IntercomTrackEvent('changed-settings');
+          IntercomTrackEvent('changed-settings', {'setting': 'Goal Amount'});
         }
       });
     }
