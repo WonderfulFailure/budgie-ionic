@@ -39,6 +39,11 @@ angular.module('budgie.controllers', ['budgie.config'])
       .success(function(response, status) {
         if(status == 200) {
           ActiveUser(response);
+
+          // This is for the case when a user logs in immediately after logging out
+          $ionicHistory.clearHistory();
+          $ionicHistory.clearCache();
+
           $scope.closeLogin();
         }
       })
@@ -63,14 +68,17 @@ angular.module('budgie.controllers', ['budgie.config'])
   }
 
   $scope.doLogout = function() {
+    $localStorage.sessionToken = null;
     localStorage.removeItem('ngStorage-sessionToken');
+    $scope.loginData = {};
     ActiveUser(null);
     $ionicHistory.nextViewOptions({
       disableAnimate: true,
       disableBack: true
     });
-    $state.go('app.daily', {}, { reload: true, inherit: false, notify: true });
-    $window.location.reload(true);
+    $state.go('app.daily', {}, { reload: true, inherit: false, notify: true, location: true });
+    $ionicHistory.clearHistory();
+    $ionicHistory.clearCache();
   }
 })
 
@@ -182,9 +190,9 @@ angular.module('budgie.controllers', ['budgie.config'])
             }
           }).success(function() {
             $ionicPopup.alert({
-              title: 'Updated!',
-               template: 'Starting tomorrow, you\'ll get <strong>$' + parseFloat(newMonthlyBudget / 30).toFixed(2) + '</strong> per day.  Sweet.',
-               buttons: [{ text: 'Bwraaak!', type: 'button-calm' }]
+              title: 'New money, suit and tie',
+               template: 'Starting tomorrow, you\'ll get <strong>$' + parseFloat(newMonthlyBudget / 30).toFixed(2) + '</strong> per day.',
+               buttons: [{ text: 'Got it', type: 'button-calm' }]
              });
             IntercomTrackEvent('changed-settings', {'setting': 'Monthly Budget'});
           });

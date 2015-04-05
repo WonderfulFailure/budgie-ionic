@@ -10,6 +10,9 @@ angular.module('budgie.services', ['ngStorage'])
        else if($localStorage.sessionToken) {
         activeUser = { 'sessionToken': $localStorage.sessionToken };
        }
+       else if(user === null) {
+        activeUser = null;
+       }
 
        return activeUser;
     }
