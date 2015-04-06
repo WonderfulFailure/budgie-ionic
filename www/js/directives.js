@@ -5,7 +5,7 @@ angular.module('budgie.directives', ['ngStorage'])
     link: function(scope, element, attrs) {
       $timeout(function() {
         element[0].focus();
-      }, 150);
+      }, 250);
     }
   };
 });

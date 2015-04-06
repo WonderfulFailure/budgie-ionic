@@ -485,10 +485,19 @@ angular.module('budgie.controllers', ['budgie.config'])
     $scope.welcome.todaysBudget = parseInt($scope.welcome.monthlyBudget / 30);
     $scope.welcome.bucketGoal = String(parseInt($scope.welcome.bucketGoal * 100));
 
+    $scope.signUpData = {
+      'email': $scope.welcome.email,
+      'username': $scope.welcome.username,
+      'password': $scope.welcome.password,
+      'monthlyBudget': $scope.welcome.monthlyBudget,
+      'dailyBudget': $scope.welcome.dailyBudget,
+      'todaysBudget': $scope.welcome.todaysBudget
+    }
+
     $http({
       method  : 'POST',
       url     : 'https://api.parse.com/1/users',
-      data    : JSON.stringify($scope.welcome),
+      data    : JSON.stringify($scope.signUpData),
       headers : {
         'X-Parse-Application-Id': parseConfig.appid,
         'X-Parse-REST-API-Key': parseConfig.rest_key,
