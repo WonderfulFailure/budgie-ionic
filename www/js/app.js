@@ -95,6 +95,15 @@ angular.module('budgie', ['ionic', 'angular-progress-arc', 'ui.utils.masks', 'bu
         controller: 'WelcomeCtrl'
       }
     }
+  })
+
+  .state('app.feedback', {
+    url: "/feedback",
+    views: {
+      'menuContent': {
+        templateUrl: "templates/feedback.html"
+      }
+    }
   });
   // if none of the above states are matched, use this as the fallback
   $urlRouterProvider.otherwise('/app/daily');
