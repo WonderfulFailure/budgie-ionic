@@ -1,18 +1,23 @@
 <ion-view view-title="Budgie">
   <ion-content>
     <div id="daily" style="margin:20px 0 0 0" ng-click="changeMonthlyBudget()"></div>
-    <div id="transactions" ng-show="transactions.length >= 0">
-        <div class="row" ng-repeat="transaction in transactions.slice().reverse()">
-            <div class="col col-67 col-offset-10">
-                {{ transaction.label }}
+    <div class="flip-container" ng-class="{ 'flip': daily.toggleFlip }" ng-init="daily.toggleFlip = false;">
+        <div class="flipper">
+            <div class="front">
+                <div class="padding" style="margin-top: 10px;">
+                    <button class="button button-block button-calm button-outline" ng-click="daily.toggleFlip = !daily.toggleFlip; focusMe = true">Spend</button>
+                </div>
             </div>
-            <div class="col">
-                ${{ transaction.amount / 100 | number:2 }}
+            <div class="back">
+                <form ng-submit="spendMoney()">
+                    <div class="list list-inset">
+                        <label class="item item-input">
+                            <i class="icon ion-social-usd"></i>
+                            <input type="tel" id="spend" placeholder="00.00" ng-blur="daily.toggleFlip = !daily.toggleFlip; spendMoney(spend.amount); spend.amount = ''" ng-model="spend.amount" ui-number-mask="2" ui-hide-group-sep focus-me="focusMe" />
+                        </label>
+                    </div>
+                </form>
             </div>
-        </div>
-        <div class="row">
-            <div class="col col-67 col-offset-10">Total purchases</div>
-            <div class="col">${{ getTotal() | number:2 }}</div>
         </div>
     </div>
   </ion-content>

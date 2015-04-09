@@ -1,68 +1,235 @@
-angular.module('budgie.services', ['ngStorage'])
+angular.module('budgie.services', ['ngStorage', 'budgie.config'])
 
-.factory('ActiveUser', ['$window', '$localStorage', function(win, $localStorage) {
-    var activeUser;
-    return function(user) {
-       if(user) {
-        activeUser = user;
-        $localStorage.sessionToken = user.sessionToken;
-       }
-       else if($localStorage.sessionToken) {
-        activeUser = { 'sessionToken': $localStorage.sessionToken };
-       }
-       else if(user === null) {
-        activeUser = null;
-       }
+.factory('User', ['$http', '$localStorage', '$q', 'parseConfig', function($http, $localStorage, $q, parseConfig) {
+  var currentUser;
 
-       return activeUser;
+  var User = {};
+
+  // Converts an object to a query string
+  var qs = function(obj, prefix){
+    var str = [];
+    for (var p in obj) {
+      var k = prefix ? prefix + "[" + p + "]" : p,
+          v = obj[k];
+      str.push(angular.isObject(v) ? qs(v, k) : (k) + "=" + encodeURIComponent(v));
     }
-}])
+    return str.join("&");
+  }
 
-.factory('Parse', ['$http', '$localStorage', function($http, $localStorage) {
-    var baseUrl = "https://api.parse.com";
-    var appId;
-    var apiKey;
-    var currentUser;
+  // Logs the user into Parse
+  // returns .success() upon successful login,
+  //         .error() otherwise
+  // If the login is successful, the sessionToken will be set in localStorage
+  User.login = function(username, password) {
+    var deferred = $q.defer();
+    var promise = deferred.promise;
 
-    return {
-        config: function(data, success, error) {
-          appId = data.appId;
-          apiKey = data.apiKey;
-          success();
-        },
-        signup: function(data, success, error) {
-            $http.post(baseUrl + '/signin', data).success(success).error(error)
-        },
-        login: function(data, success, error) {
-            $http.get(baseUrl + '/1/login?username=' + data.username + '&password=' + data.password).success(success).error(error)
-        },
-        logout: function(success) {
-            changeUser({});
-            delete $localStorage.token;
-            success();
+    var request = $http({
+      method  : 'GET',
+      url     : parseConfig.base_url + '/1/login?username=' + username + '&password=' + password,
+      headers : {
+        'X-Parse-Application-Id': parseConfig.appid,
+        'X-Parse-REST-API-Key': parseConfig.rest_key,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    })
+    .success(function(result) {
+      currentUser = result;
+      $localStorage.sessionToken = result.sessionToken;
+      deferred.resolve(result);
+    })
+    .error(function(error) {
+      deferred.reject(error);
+    });
+
+    promise.success = function(fn) {
+      promise.then(fn);
+      return promise;
+    }
+
+    promise.error = function(fn) {
+      promise.then(null, fn);
+      return promise;
+    }
+
+    return promise;
+  }
+
+  User.logout = function() {
+    $localStorage.sessionToken = null;
+    localStorage.removeItem('ngStorage-sessionToken');
+    currentUser = null;
+  }
+
+  User.currentUser = function() {
+    var deferred = $q.defer();
+    var promise = deferred.promise;
+
+    // User is logged in
+    if(currentUser) {
+      deferred.resolve(currentUser);
+    }
+    // User was logged in, need to fetch details again
+    else if($localStorage.sessionToken) {
+      $http({
+        method  : 'GET',
+        url     : parseConfig.base_url + '/1/users/me',
+        headers : {
+          'X-Parse-Application-Id': parseConfig.appid,
+          'X-Parse-REST-API-Key': parseConfig.rest_key,
+          'X-Parse-Session-Token': $localStorage.sessionToken,
+          'Content-Type': 'application/x-www-form-urlencoded'
         }
-    };
+      })
+      .success(function(result) {
+        currentUser = result;
+        deferred.resolve(result);
+      })
+      .error(function(error) {
+        deferred.reject(error);
+      });
+    }
+    // User never logged in
+    else {
+      deferred.reject('Not logged in');
+    }
+
+    return promise;
+  }
+
+  User.updateParse = function(newData) {
+    if(currentUser) {
+      var newDataJSON = qs(newData);
+      $http({
+        method  : 'POST',
+        url     : parseConfig.base_url + '/1/functions/UpdateUserSettings',
+        data    : newDataJSON,
+        headers : {
+          'X-Parse-Application-Id': parseConfig.appid,
+          'X-Parse-REST-API-Key': parseConfig.rest_key,
+          'X-Parse-Session-Token': currentUser.sessionToken,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      });
+    }
+  }
+
+  User.update = function(newData, skipParse) {
+    if(skipParse === undefined) skipParse = false;
+
+    if(currentUser) {
+      for(var key in newData) {
+        currentUser[key] = newData[key];
+      }
+
+      // Update parse data
+      // unless skipped
+      if(!skipParse) {
+        User.updateParse(newData);
+      }
+
+      return currentUser;
+    }
+  }
+
+  return User;
 }])
 
-.factory('IntercomAuthenticate', ['$window', function(win) {
-    return function(userEmail) {
-       Intercom('boot', {
-          app_id: "ay3p9jeb",
-          email: userEmail,
-          last_request_at: Date.now
-        });
+.factory('Transactions', ['$http', '$localStorage', '$q', 'parseConfig', function($http, $localStorage, $q, parseConfig) {
+  var Transactions = {};
+
+  // A list of transactions for the user
+  var transactionList = [];
+
+  // A list of incoming transactions that will be added to transactionList
+  // This list is regularly emptied
+  var newTransactionList = [];
+
+  // Fetch transactions, either from localStorage or Parse
+  Transactions.getTransactions = function() {
+
+  }
+
+  // Adds transaction to newTransactionList
+  Transactions.addTransaction = function(user, transaction) {
+    var deferred = $q.defer();
+    var promise = deferred.promise;
+
+    if(!user.sessionToken) {
+      deferred.reject('Invalid user');
     }
+
+    var request = $http({
+      method  : 'POST',
+      url     : parseConfig.base_url + '/1/functions/AddTransaction',
+      data    : 'amount=' + transaction,
+      headers : {
+        'X-Parse-Application-Id': parseConfig.appid,
+        'X-Parse-REST-API-Key': parseConfig.rest_key,
+        'X-Parse-Session-Token': user.sessionToken,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    })
+    .success(function(result) {
+      newTransactionList.push(result);
+      deferred.resolve(result);
+    })
+    .error(function(error) {
+      deferred.reject(error);
+    });
+
+    promise.success = function(fn) {
+      promise.then(fn);
+      return promise;
+    }
+
+    promise.error = function(fn) {
+      promise.then(null, fn);
+      return promise;
+    }
+
+    return promise;
+  }
+
+  // Appends new transactions to transactionList
+  // and removes them from newTransactionList
+  Transactions.addNewTransactions = function() {
+
+  }
+
+  return Transactions;
 }])
 
-.factory('IntercomTrackEvent', ['$window', function($window) {
-    return function(eventName, metadata) {
-        if(metadata === undefined) metadata = {};
-        Intercom('trackEvent', eventName, metadata);
-    }
-}])
+.factory('Intercom', ['$window', function($window) {
+  var hasAuthed = false;
+  var IntercomService = {};
 
-.factory('IntercomLogout', ['$window', function(win) {
-    return function() {
-       Intercom('shutdown');
+  IntercomService.authenticate = function(email) {
+    hasAuthed = true;
+    return Intercom('boot', {
+      app_id: "ay3p9jeb",
+      email: email,
+      last_request_at: Date.now
+    });
+  }
+
+  IntercomService.update = function(email) {
+    if(hasAuthed) {
+      return Intercom('update', { email: email });
     }
+    else {
+      return IntercomService.authenticate(email);
+    }
+  }
+
+  IntercomService.trackEvent = function(eventName, metadata) {
+    if(metadata === undefined) metadata = {};
+    return Intercom('trackEvent', eventName, metadata);
+  }
+
+  IntercomService.shutdown = function() {
+    return Intercom('shutdown');
+  }
+
+  return IntercomService;
 }]);

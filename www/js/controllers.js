@@ -1,8 +1,16 @@
 angular.module('budgie.controllers', ['budgie.config'])
 
-.controller('AppCtrl', function($scope, $rootScope, $ionicModal, $ionicPopup, $ionicHistory, $state, $http, $location, $localStorage, $window, ActiveUser, parseConfig, IntercomLogout) {
+.controller('AppCtrl', function($scope, $rootScope, $ionicModal, $ionicPopup, $ionicHistory, $ionicLoading, $state, $http, $localStorage, User, Intercom) {
 
   $rootScope.sideMenuVisible = true;
+
+  // Update Intercom status upon every view change, if the user
+  // is logged in
+  $rootScope.$on( "$ionicView.enter", function( scopes, states ) {
+      User.currentUser().then(function(result) {
+        Intercom.update(result.email);
+      });
+  });
 
   // Form data for the login modal
   $scope.loginData = {};
@@ -14,6 +22,7 @@ angular.module('budgie.controllers', ['budgie.config'])
 
   // Open the login modal
   $scope.showLogin = function() {
+    $ionicLoading.hide();
     $ionicModal.fromTemplateUrl('templates/login.html', {
       scope: $scope
     }).then(function(modal) {
@@ -27,30 +36,20 @@ angular.module('budgie.controllers', ['budgie.config'])
   // Perform the login action when the user submits the login form
   $scope.doLogin = function(loginForm) {
     if(loginForm.$valid) {
-      $http({
-        method  : 'GET',
-        url     : 'https://api.parse.com/1/login?username=' + $scope.loginData.email + '&password=' + $scope.loginData.password,
-        headers : {
-          'X-Parse-Application-Id': parseConfig.appid,
-          'X-Parse-REST-API-Key': parseConfig.rest_key,
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
-      })
-      .success(function(response, status) {
-        if(status == 200) {
-          ActiveUser(response);
+      User.login($scope.loginData.email, $scope.loginData.password)
+      .success(function(result) {
+        // This is for the case when a user logs in immediately after logging out
+        $ionicHistory.clearHistory();
+        $ionicHistory.clearCache();
+        $scope.closeLogin();
 
-          // This is for the case when a user logs in immediately after logging out
-          $ionicHistory.clearHistory();
-          $ionicHistory.clearCache();
-
-          $scope.closeLogin();
-        }
+        Intercom.authenticate(result.email);
       })
-      .error(function(response, status) {
-        var alertPopup = $ionicPopup.alert({
+      .error(function(error) {
+        $ionicPopup.alert({
           title: 'Whoops!',
-          template: 'Bwraak!  That login info didn\'t work!  Please try again.'
+          template: 'Bwraak!  That login info didn\'t work!',
+          buttons: [{ text: 'Try again', type: 'button-calm' }]
         });
       });
     }
@@ -68,11 +67,9 @@ angular.module('budgie.controllers', ['budgie.config'])
   }
 
   $scope.doLogout = function() {
-    $localStorage.sessionToken = null;
-    localStorage.removeItem('ngStorage-sessionToken');
     $scope.loginData = {};
-    IntercomLogout();
-    ActiveUser(null);
+    Intercom.shutdown();
+    User.logout();
     $ionicHistory.nextViewOptions({
       disableAnimate: true,
       disableBack: true
@@ -83,9 +80,10 @@ angular.module('budgie.controllers', ['budgie.config'])
   }
 })
 
-.controller('DailyCtrl', function($scope, $rootScope, $http, $state, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicPopup, ActiveUser, parseConfig, IntercomAuthenticate, IntercomTrackEvent) {
+.controller('DailyCtrl', function($scope, $rootScope, $http, $state, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicPopup, $ionicLoading, User, Transactions, Intercom) {
 
   $scope.daily = {};
+  $scope.user = {};
 
   $rootScope.sideMenuVisible = true;
   $ionicSideMenuDelegate.canDragContent(true);
@@ -101,147 +99,96 @@ angular.module('budgie.controllers', ['budgie.config'])
     $state.go('app.welcome.budget', {}, { reload: true, inherit: false, notify: true });
   }
 
-  $scope.getTransactions = function() {
-    var currentUser = ActiveUser();
-    if(currentUser) {
-      $http({
-        method  : 'POST',
-        url     : 'https://api.parse.com/1/functions/GetUserTransactions',
-        headers : {
-          'X-Parse-Application-Id': parseConfig.appid,
-          'X-Parse-REST-API-Key': parseConfig.rest_key,
-          'X-Parse-Session-Token': currentUser.sessionToken,
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
-      })
-      .success(function(response) {
-        $scope.transactions = response.result;
-        $scope.getTotal = function() {
-          var total = 0;
-          for(var i = 0; i < $scope.transactions.length; i++){
-              total += $scope.transactions[i].amount / 100;
-          }
-          return total;
-        }
-      })
-      .then(function() {
-        return $http({
-          method  : 'GET',
-          url     : 'https://api.parse.com/1/users/me',
-          headers : {
-            'X-Parse-Application-Id': parseConfig.appid,
-            'X-Parse-REST-API-Key': parseConfig.rest_key,
-            'X-Parse-Session-Token': currentUser.sessionToken,
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        })
-        .success(function(response) {
-          IntercomAuthenticate(response.email);
-          $scope.daily.monthlyBudget = response.monthlyBudget;
-          $scope.daily.todaysBudget = response.todaysBudget;
-          var rp1 = radialProgress(document.getElementById('daily'))
-                    .diameter(300)
-                    .value(response.todaysBudget)
-                    .maxValue(response.dailyBudget)
-                    .render();
-        });
-      });
-    }
-    else {
+  $scope.getDaily = function() {
+    User.currentUser().then(function(result) {
+      $scope.user = result;
+
+      // d3
+      var rp1 = radialProgress(document.getElementById('daily'))
+                .diameter(300)
+                .value(result.todaysBudget)
+                .maxValue(result.dailyBudget)
+                .render();
+
+
+    }, function(error) {
       $scope.showLogin();
-    }
+    });
   }
 
   $scope.changeMonthlyBudget = function() {
-    var currentUser = ActiveUser();
-      $scope.daily.mB = parseFloat($scope.daily.monthlyBudget / 100).toFixed(2);
-      $ionicPopup.show({
-        template: '<label class="item item-input"><i class="icon ion-social-usd"></i><input type="tel" placeholder="00.00" ng-model="daily.mB" ui-number-mask="2" ui-hide-group-sep /></label>',
-        title: 'Enter your monthly budget',
-        subTitle: 'Just dollars, please.',
-        scope: $scope,
-        buttons: [
-          { text: 'Cancel' },
-          {
-            text: '<b>Save</b>',
-            type: 'button-calm',
-            onTap: function(e) {
-              if (!$scope.daily.mB) {
-                //don't allow the user to close unless he enters wifi password
-                e.preventDefault();
-              } else {
-                return $scope.daily.mB;
-              }
+    $scope.daily.mB = parseFloat($scope.user.monthlyBudget / 100).toFixed(2);
+    $ionicPopup.show({
+      template: '<label class="item item-input"><i class="icon ion-social-usd"></i><input type="tel" placeholder="00.00" ng-model="daily.mB" ui-number-mask="2" ui-hide-group-sep /></label>',
+      title: 'Enter your monthly budget',
+      subTitle: 'Just dollars, please.',
+      scope: $scope,
+      buttons: [
+        { text: 'Cancel' },
+        {
+          text: '<b>Save</b>',
+          type: 'button-calm',
+          onTap: function(e) {
+            if (!$scope.daily.mB) {
+              //don't allow the user to close unless he enters wifi password
+              e.preventDefault();
+            } else {
+              return $scope.daily.mB;
             }
           }
-        ]
-      })
-      .then(function(newMonthlyBudget) {
-        if(newMonthlyBudget) {
-          $scope.daily.monthlyBudget = newMonthlyBudget * 100;
-          $http({
-            method  : 'POST',
-            url     : 'https://api.parse.com/1/functions/UpdateUserSettings',
-            data    : 'monthlyBudget=' + newMonthlyBudget * 100,
-            headers : {
-              'X-Parse-Application-Id': parseConfig.appid,
-              'X-Parse-REST-API-Key': parseConfig.rest_key,
-              'X-Parse-Session-Token': currentUser.sessionToken,
-              'Content-Type': 'application/x-www-form-urlencoded'
-            }
-          }).success(function() {
-            $ionicPopup.alert({
-              title: 'New money, suit and tie',
-               template: 'Starting tomorrow, you\'ll get <strong>$' + parseFloat(newMonthlyBudget / 30).toFixed(2) + '</strong> per day.',
-               buttons: [{ text: 'Got it', type: 'button-calm' }]
-             });
-            IntercomTrackEvent('changed-settings', {'setting': 'Monthly Budget'});
-          });
         }
-      });
-    }
+      ]
+    })
+    .then(function(newMonthlyBudget) {
+      if(newMonthlyBudget) {
+        $scope.user.monthlyBudget = newMonthlyBudget * 100;
+        User.update($scope.user);
+
+        $ionicPopup.alert({
+          title: 'New money, suit and tie',
+          template: 'Starting tomorrow, you\'ll get <strong>$' + parseFloat(newMonthlyBudget / 30).toFixed(2) + '</strong> per day.',
+          buttons: [{ text: 'Got it', type: 'button-calm' }]
+        });
+
+        Intercom.trackEvent('changed-settings', {'setting': 'Monthly Budget'});
+      }
+    });
+  }
+
+  $scope.spendMoney = function(amount) {
+    if(amount === undefined || amount == 0 || amount == '0.00') return false;
+
+    User.currentUser().then(function(user) {
+      var amountInCents = amount * 100;
+      var newBalance = user.todaysBudget - amountInCents;
+
+      // Update just local data
+      User.update({ 'todaysBudget': newBalance }, true);
+
+      // Add the transaction to parse
+      Transactions.addTransaction(user, amount);
+
+      // d3
+      var rp1 = radialProgress(document.getElementById('daily'))
+                .diameter(300)
+                .value(newBalance)
+                .maxValue(user.dailyBudget)
+                .render();
+
+    }, function(error) {
+      $scope.showLogin();
+    });
+  }
 
   // Get fresh transactions after logging in
   $scope.$on('modal.hidden', function(modal) {
-    $scope.getTransactions();
+    $scope.getDaily();
   });
 
-  $scope.getTransactions();
+  $scope.getDaily();
 })
 
-.controller('SpendCtrl', function($scope, $http, $state, $localStorage, $ionicHistory, $ionicPopup, ActiveUser, parseConfig, IntercomTrackEvent) {
-
-  $scope.spend = { amount: '' };
-  $scope.amountCents = "";
-
-  $scope.spendMoney = function() {
-    var currentUser = ActiveUser();
-    $http({
-      method  : 'POST',
-      url     : 'https://api.parse.com/1/functions/AddTransaction',
-      data    : 'amount=' + $scope.spend.amount,
-      headers : {
-        'X-Parse-Application-Id': parseConfig.appid,
-        'X-Parse-REST-API-Key': parseConfig.rest_key,
-        'X-Parse-Session-Token': currentUser.sessionToken,
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
-    })
-    .success(function(response) {
-      $scope.spend.amount = '';
-      $scope.amountCents = '';
-
-      IntercomTrackEvent('spent-money');
-
-      $ionicHistory.nextViewOptions({
-         disableBack: true
-      });
-      $state.go('app.daily', { transactions: [] }, { reload: true, inherit: false, notify: true });
-    });
-  }
-})
-
-.controller('GoalCtrl', function($scope, $http, $state, $localStorage, $ionicHistory, $ionicPopup, ActiveUser, parseConfig, IntercomTrackEvent) {
+.controller('GoalCtrl', function($scope, $http, $state, $localStorage, $ionicHistory, $ionicPopup, parseConfig, User, Intercom) {
   $scope.goal = {};
   $scope.goal.amount = "00.00";
 
@@ -265,57 +212,45 @@ angular.module('budgie.controllers', ['budgie.config'])
     var remainingBudget;
     var newBudget = 0;
 
-    var currentUser = ActiveUser();
-    $http({
-      method  : 'GET',
-      url     : 'https://api.parse.com/1/users/me',
-      headers : {
-        'X-Parse-Application-Id': parseConfig.appid,
-        'X-Parse-REST-API-Key': parseConfig.rest_key,
-        'X-Parse-Session-Token': currentUser.sessionToken,
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
-    })
-    .success(function(response) {
-      dailyBudget = response.dailyBudget;
-      remainingBudget = response.todaysBudget;
+    User.currentUser().then(function(user) {
+      dailyBudget = user.dailyBudget;
+      remainingBudget = user.todaysBudget;
       newBudget = remainingBudget;
 
       $scope.remainingBudget = remainingBudget;
-    })
-    .then(function() {
-        return $http({
-          method  : 'POST',
-          url     : 'https://api.parse.com/1/functions/GetUserBuckets',
-          headers : {
-            'X-Parse-Application-Id': parseConfig.appid,
-            'X-Parse-REST-API-Key': parseConfig.rest_key,
-            'X-Parse-Session-Token': currentUser.sessionToken,
-            'Content-Type': 'application/x-www-form-urlencoded'
+
+      $http({
+        method  : 'POST',
+        url     : 'https://api.parse.com/1/functions/GetUserBuckets',
+        headers : {
+          'X-Parse-Application-Id': parseConfig.appid,
+          'X-Parse-REST-API-Key': parseConfig.rest_key,
+          'X-Parse-Session-Token': user.sessionToken,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      })
+      .success(function(data) {
+          if(!data.error) {
+              contributedToBucket = data.result.progress;
+              newContribution = contributedToBucket;
+              bucketGoal = data.result.goal;
+
+              $scope.goal.contributedToBucket = contributedToBucket;
+              $scope.goal.bucketName = data.result.title;
+
+              var rp1 = radialProgressSmall(document.getElementById('goal'))
+                      .diameter(150)
+                      .value(contributedToBucket)
+                      .maxValue(bucketGoal)
+                      .render();
+              var rp2 = radialProgressSmall(document.getElementById('budget'))
+                      .diameter(150)
+                      .value(remainingBudget)
+                      .maxValue(dailyBudget)
+                      .innerLabel(remainingBudget)
+                      .render();
           }
-        })
-        .success(function(data) {
-            if(!data.error) {
-                contributedToBucket = data.result.progress;
-                newContribution = contributedToBucket;
-                bucketGoal = data.result.goal;
-
-                $scope.goal.contributedToBucket = contributedToBucket;
-                $scope.goal.bucketName = data.result.title;
-
-                var rp1 = radialProgressSmall(document.getElementById('goal'))
-                        .diameter(150)
-                        .value(contributedToBucket)
-                        .maxValue(bucketGoal)
-                        .render();
-                var rp2 = radialProgressSmall(document.getElementById('budget'))
-                        .diameter(150)
-                        .value(remainingBudget)
-                        .maxValue(dailyBudget)
-                        .innerLabel(remainingBudget)
-                        .render();
-            }
-        });
+      });
     });
 
     $scope.updateSlider = function(event) {
@@ -338,25 +273,25 @@ angular.module('budgie.controllers', ['budgie.config'])
     }
 
     $scope.processForm = function() {
-      $http({
-        method  : 'POST',
-        url     : 'https://api.parse.com/1/functions/AddBucketContribution',
-        data    : 'amount=' + $scope.goal.amount / 100,
-        headers : {
-          'X-Parse-Application-Id': parseConfig.appid,
-          'X-Parse-REST-API-Key': parseConfig.rest_key,
-          'X-Parse-Session-Token': currentUser.sessionToken,
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
-      })
-      .success(function(response, status) {
-        if(status == 200) {
-          IntercomTrackEvent('saved-money');
-          $ionicHistory.nextViewOptions({
-            disableBack: true
-          });
-          $state.go('app.daily', { transactions: [] }, { reload: true, inherit: false, notify: true });
-        }
+      User.currentUser().then(function(user) {
+        User.update({ 'todaysBudget': user.todaysBudget - $scope.goal.amount }, true);
+        Intercom.trackEvent('saved-money');
+        $http({
+          method  : 'POST',
+          url     : 'https://api.parse.com/1/functions/AddBucketContribution',
+          data    : 'amount=' + $scope.goal.amount / 100,
+          headers : {
+            'X-Parse-Application-Id': parseConfig.appid,
+            'X-Parse-REST-API-Key': parseConfig.rest_key,
+            'X-Parse-Session-Token': user.sessionToken,
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        });
+
+        $ionicHistory.nextViewOptions({
+          disableBack: true
+        });
+        $state.go('app.daily', { transactions: [] }, { reload: true, inherit: false, notify: true });
       });
     }
 
@@ -384,17 +319,7 @@ angular.module('budgie.controllers', ['budgie.config'])
       })
       .then(function(bucketName) {
         if(bucketName) {
-          $http({
-            method  : 'POST',
-            url     : 'https://api.parse.com/1/functions/UpdateUserSettings',
-            data    : 'bucketName=' + bucketName,
-            headers : {
-              'X-Parse-Application-Id': parseConfig.appid,
-              'X-Parse-REST-API-Key': parseConfig.rest_key,
-              'X-Parse-Session-Token': currentUser.sessionToken,
-              'Content-Type': 'application/x-www-form-urlencoded'
-            }
-          });
+          User.update({ 'bucketName': bucketName });
           IntercomTrackEvent('changed-settings', {'setting': 'Goal Title', 'Goal Title': bucketName});
         }
       });
@@ -426,25 +351,15 @@ angular.module('budgie.controllers', ['budgie.config'])
       .then(function(newBucketGoal) {
         if(newBucketGoal) {
           bucketGoal = newBucketGoal * 100;
+          User.update({ 'bucketGoal': newBucketGoal * 100 });
           $scope.updateSlider();
-          $http({
-            method  : 'POST',
-            url     : 'https://api.parse.com/1/functions/UpdateUserSettings',
-            data    : 'bucketGoal=' + newBucketGoal * 100,
-            headers : {
-              'X-Parse-Application-Id': parseConfig.appid,
-              'X-Parse-REST-API-Key': parseConfig.rest_key,
-              'X-Parse-Session-Token': currentUser.sessionToken,
-              'Content-Type': 'application/x-www-form-urlencoded'
-            }
-          });
           IntercomTrackEvent('changed-settings', {'setting': 'Goal Amount'});
         }
       });
     }
 })
 
-.controller('WelcomeCtrl', function($scope, $rootScope, $http, $state, $stateParams, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicViewSwitcher, ActiveUser, parseConfig, IntercomTrackEvent) {
+.controller('WelcomeCtrl', function($scope, $rootScope, $http, $state, $stateParams, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicViewSwitcher, ActiveUser, parseConfig, Intercom) {
 
   $rootScope.sideMenuVisible = false;
   $ionicSideMenuDelegate.canDragContent(false);

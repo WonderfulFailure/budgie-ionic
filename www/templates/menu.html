@@ -8,8 +8,14 @@
         <button class="button button-icon button-clear ion-navicon" menu-toggle="left" ng-show="sideMenuVisible">
         </button>
       </ion-nav-buttons>
+
+      <ion-nav-buttons side="right">
+        <a href="#/app/feedback" class="button button-icon button-clear">
+          Feedback
+        </a>
+      </ion-nav-buttons>
     </ion-nav-bar>
-    <ion-nav-view name="menuContent" animation="slide-left-right"></ion-nav-view>
+    <ion-nav-view name="menuContent" animation="slide-left-right" scroll="false"></ion-nav-view>
   </ion-side-menu-content>
 
   <ion-side-menu side="left">
@@ -21,14 +27,8 @@
         <ion-item nav-clear menu-close href="#/app/daily">
           Home
         </ion-item>
-        <ion-item nav-clear menu-close href="#/app/spend">
-          Spend
-        </ion-item>
         <ion-item nav-clear menu-close href="#/app/goals">
           Goals
-        </ion-item>
-        <ion-item nav-clear menu-close href="#/app/feedback">
-          Submit Feedback
         </ion-item>
         <ion-item nav-clear menu-close ng-click="doLogout()">
           Logout
