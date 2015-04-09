@@ -359,7 +359,7 @@ angular.module('budgie.controllers', ['budgie.config'])
     }
 })
 
-.controller('WelcomeCtrl', function($scope, $rootScope, $http, $state, $stateParams, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicViewSwitcher, ActiveUser, parseConfig, Intercom) {
+.controller('WelcomeCtrl', function($scope, $rootScope, $http, $state, $stateParams, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicViewSwitcher, User, Intercom) {
 
   $rootScope.sideMenuVisible = false;
   $ionicSideMenuDelegate.canDragContent(false);
@@ -409,37 +409,14 @@ angular.module('budgie.controllers', ['budgie.config'])
       'todaysBudget': $scope.welcome.todaysBudget
     }
 
-    $http({
-      method  : 'POST',
-      url     : 'https://api.parse.com/1/users',
-      data    : JSON.stringify($scope.signUpData),
-      headers : {
-        'X-Parse-Application-Id': parseConfig.appid,
-        'X-Parse-REST-API-Key': parseConfig.rest_key,
-        'Content-Type': 'application/json'
-      }
-    })
+    User.signup($scope.signUpData)
     .success(function(result) {
-      ActiveUser(result);
-
-      $http({
-        method  : 'POST',
-        url     : 'https://api.parse.com/1/functions/UpdateUserSettings',
-        data    : 'bucketName=' + $scope.welcome.bucketTitle + "&bucketGoal=" + $scope.welcome.bucketGoal,
-        headers : {
-          'X-Parse-Application-Id': parseConfig.appid,
-          'X-Parse-REST-API-Key': parseConfig.rest_key,
-          'X-Parse-Session-Token': result.sessionToken,
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
-      })
-      .success(function(result) {
-        $localStorage.completedWelcomeProcess = true;
-        $ionicHistory.nextViewOptions({
-          disableBack: true
-        });
-        $state.go('app.daily', {  }, { reload: true, inherit: false, notify: true });
+      User.update({ 'bucketName': $scope.welcome.bucketTitle, 'bucketGoal': $scope.welcome.bucketGoal });
+      $localStorage.completedWelcomeProcess = true;
+      $ionicHistory.nextViewOptions({
+        disableBack: true
       });
+      $state.go('app.daily', {}, { reload: true, inherit: false, notify: true });
     });
   }
 

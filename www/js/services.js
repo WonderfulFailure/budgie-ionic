@@ -16,6 +16,46 @@ angular.module('budgie.services', ['ngStorage', 'budgie.config'])
     return str.join("&");
   }
 
+  // Signs up on Parse and logs the user in
+  // returns .success() upon successful signup,
+  //         .error() otherwise
+  // If the signup is successful, the sessionToken will be set in localStorage
+  User.signup = function(signupData) {
+    var deferred = $q.defer();
+    var promise = deferred.promise;
+
+    var request = $http({
+      method  : 'POST',
+      url     : parseConfig.base_url + '/1/users',
+      data    : JSON.stringify(signupData),
+      headers : {
+        'X-Parse-Application-Id': parseConfig.appid,
+        'X-Parse-REST-API-Key': parseConfig.rest_key,
+        'Content-Type': 'application/json'
+      }
+    })
+    .success(function(result) {
+      currentUser = result;
+      $localStorage.sessionToken = result.sessionToken;
+      deferred.resolve(result);
+    })
+    .error(function(error) {
+      deferred.reject(error);
+    });
+
+    promise.success = function(fn) {
+      promise.then(fn);
+      return promise;
+    }
+
+    promise.error = function(fn) {
+      promise.then(null, fn);
+      return promise;
+    }
+
+    return promise;
+  }
+
   // Logs the user into Parse
   // returns .success() upon successful login,
   //         .error() otherwise
