@@ -1,6 +1,8 @@
 angular.module('budgie.controllers', ['budgie.config'])
 
-.controller('AppCtrl', function($scope, $rootScope, $ionicModal, $ionicPopup, $ionicHistory, $ionicLoading, $state, $http, $localStorage, User, Intercom) {
+.controller('AppCtrl', function($scope, $rootScope, $ionicModal, $ionicPopup, $ionicHistory, $ionicLoading, $ionicScrollDelegate, $state, $http, $localStorage, User, Intercom) {
+
+  $ionicScrollDelegate.freezeScroll( true );
 
   $rootScope.sideMenuVisible = true;
 

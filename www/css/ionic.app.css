@@ -7647,6 +7647,11 @@ a.button {
   -webkit-transform: rotateX(180deg);
   transform: rotateX(180deg); }
 
+h2 {
+  font-family: 'Helvetica Neue', sans-serif;
+  text-transform: uppercase;
+  font-weight: 100; }
+
 .bar-header {
   border: 0px !important;
   border-bottom-color: transparent !important;

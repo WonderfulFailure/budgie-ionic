@@ -1,11 +1,12 @@
-<ion-view view-title="{{ daily.today | date : 'EEEE, MMMM d' }}">
-  <ion-content>
+<ion-view>
+  <ion-content scroll="false" drag-content="false">
+    <h2 class="text-center">{{ daily.today | date : 'EEEE, MMMM d' }}</h2>
     <div id="daily" style="margin:20px 0 0 0" ng-click="changeMonthlyBudget()"></div>
     <div class="flip-container" ng-class="{ 'flip': daily.toggleFlip }" ng-init="daily.toggleFlip = false;">
         <div class="flipper">
             <div class="front">
                 <div class="padding" style="margin-top: 10px;">
-                    <button class="button button-block button-calm button-outline" ng-click="daily.toggleFlip = !daily.toggleFlip; focusMe = true">Spend</button>
+                    <button class="button button-block button-calm button-outline" ng-click="daily.toggleFlip = !daily.toggleFlip; focusMe = true;">Spend</button>
                 </div>
             </div>
             <div class="back">
@@ -13,7 +14,7 @@
                     <div class="list list-inset">
                         <label class="item item-input">
                             <i class="icon ion-social-usd"></i>
-                            <input type="tel" id="spend" placeholder="00.00" ng-blur="daily.toggleFlip = !daily.toggleFlip; spendMoney(spend.amount); spend.amount = ''" ng-model="spend.amount" ui-number-mask="2" ui-hide-group-sep />
+                            <input type="tel" id="spend" placeholder="00.00" ng-blur="daily.toggleFlip = !daily.toggleFlip; spendMoney(spend.amount); spend.amount = ''; focusMe = false;" ng-model="spend.amount" ui-number-mask="2" ui-hide-group-sep focus-me="focusMe" />
                         </label>
                     </div>
                 </form>
