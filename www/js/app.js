@@ -2,15 +2,14 @@ angular.module('budgie', ['ionic', 'angular-progress-arc', 'ui.utils.masks', 'bu
 
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {
+    ionic.Platform.fullScreen();
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
     if (window.cordova && window.cordova.plugins.Keyboard) {
       cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
-      cordova.plugins.Keyboard.disableScroll(false);
     }
     if (window.StatusBar) {
-      StatusBar.overlaysWebView(true);
-      StatusBar.style(1);
+      StatusBar.hide();
     }
   });
 })

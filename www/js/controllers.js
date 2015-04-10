@@ -82,7 +82,7 @@ angular.module('budgie.controllers', ['budgie.config'])
 
 .controller('DailyCtrl', function($scope, $rootScope, $http, $state, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicPopup, $ionicLoading, User, Transactions, Intercom) {
 
-  $scope.daily = {};
+  $scope.daily = { 'today': new Date() };
   $scope.user = {};
 
   $rootScope.sideMenuVisible = true;

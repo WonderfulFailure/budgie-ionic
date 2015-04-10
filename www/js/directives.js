@@ -8,7 +8,6 @@ angular.module('budgie.directives', ['ngStorage'])
           $timeout(function() {
             element[0].focus();
             scope[attrs.focusMe] = false;
-            //cordova.plugins.Keyboard.disableScroll(false);
           }, 350);
         }
       });

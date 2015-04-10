@@ -4546,7 +4546,7 @@ ion-tabs.tabs-color-active-dark .tab-item {
 
 .popup-body {
   padding: 10px;
-  overflow: scroll; }
+  overflow: auto; }
 
 .popup-buttons {
   display: -webkit-box;
@@ -7646,6 +7646,9 @@ a.button {
 .back {
   -webkit-transform: rotateX(180deg);
   transform: rotateX(180deg); }
+
+.bar.bar-header {
+  border-color: transparent; }
 
 .background {
   fill: #FFFFFF;

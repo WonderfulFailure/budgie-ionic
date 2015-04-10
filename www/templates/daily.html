@@ -1,4 +1,4 @@
-<ion-view view-title="Budgie">
+<ion-view view-title="{{ daily.today | date : 'EEEE, MMMM d' }}">
   <ion-content>
     <div id="daily" style="margin:20px 0 0 0" ng-click="changeMonthlyBudget()"></div>
     <div class="flip-container" ng-class="{ 'flip': daily.toggleFlip }" ng-init="daily.toggleFlip = false;">
