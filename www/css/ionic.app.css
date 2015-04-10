@@ -7647,8 +7647,11 @@ a.button {
   -webkit-transform: rotateX(180deg);
   transform: rotateX(180deg); }
 
-.bar.bar-header {
-  border-color: transparent; }
+.bar-header {
+  border: 0px !important;
+  border-bottom-color: transparent !important;
+  background-image: none;
+  border-bottom: none; }
 
 .background {
   fill: #FFFFFF;

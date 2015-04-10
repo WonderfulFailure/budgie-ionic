@@ -9,6 +9,15 @@ angular.module('budgie.controllers', ['budgie.config'])
   $rootScope.$on( "$ionicView.enter", function( scopes, states ) {
       User.currentUser().then(function(result) {
         Intercom.update(result.email);
+
+        // Fetch new data from Parse
+        User.fetchFromParse(result.sessionToken);
+      });
+
+      // Keep our local user up to date when it changes
+      // (useful for when Parse finishes its update)
+      $rootScope.$watch(function () { return User.getUserObj() }, function (newVal, oldVal) {
+          User.update(newVal, true);
       });
   });
 
@@ -250,6 +259,13 @@ angular.module('budgie.controllers', ['budgie.config'])
                       .innerLabel(remainingBudget)
                       .render();
           }
+
+          $scope.$watch(function () { return User.getUserObj() }, function (newVal, oldVal) {
+            if(newVal && newVal.todaysBudget && newVal.todaysBudget != oldVal.todaysBudget) {
+              remainingBudget = newVal.todaysBudget;
+              $scope.updateSlider();
+            }
+          });
       });
     });
 

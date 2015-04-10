@@ -101,6 +101,41 @@ angular.module('budgie.services', ['ngStorage', 'budgie.config'])
     currentUser = null;
   }
 
+  User.fetchFromParse = function(sessionToken) {
+    var deferred = $q.defer();
+    var promise = deferred.promise;
+
+    var request = $http({
+      method  : 'GET',
+      url     : parseConfig.base_url + '/1/users/me',
+      headers : {
+        'X-Parse-Application-Id': parseConfig.appid,
+        'X-Parse-REST-API-Key': parseConfig.rest_key,
+        'X-Parse-Session-Token': sessionToken,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    })
+    .success(function(result) {
+      currentUser = result;
+      deferred.resolve(result);
+    })
+    .error(function(error) {
+      deferred.reject(error);
+    });
+
+    promise.success = function(fn) {
+      promise.then(fn);
+      return promise;
+    }
+
+    promise.error = function(fn) {
+      promise.then(null, fn);
+      return promise;
+    }
+
+    return promise;
+  }
+
   User.currentUser = function() {
     var deferred = $q.defer();
     var promise = deferred.promise;
@@ -111,16 +146,7 @@ angular.module('budgie.services', ['ngStorage', 'budgie.config'])
     }
     // User was logged in, need to fetch details again
     else if($localStorage.sessionToken) {
-      $http({
-        method  : 'GET',
-        url     : parseConfig.base_url + '/1/users/me',
-        headers : {
-          'X-Parse-Application-Id': parseConfig.appid,
-          'X-Parse-REST-API-Key': parseConfig.rest_key,
-          'X-Parse-Session-Token': $localStorage.sessionToken,
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
-      })
+      User.fetchFromParse($localStorage.sessionToken)
       .success(function(result) {
         currentUser = result;
         deferred.resolve(result);
@@ -170,6 +196,10 @@ angular.module('budgie.services', ['ngStorage', 'budgie.config'])
 
       return currentUser;
     }
+  }
+
+  User.getUserObj = function() {
+    return currentUser;
   }
 
   return User;
