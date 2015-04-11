@@ -1,0 +1,10 @@
+.settings {
+
+    &.change {
+        label:not(.item) {
+            text-transform: uppercase;
+            font-size: 18px;
+            font-weight: 100;
+        }
+    }
+}

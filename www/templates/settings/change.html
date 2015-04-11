@@ -1,0 +1,29 @@
+<ion-view view-title="">
+  <ion-content class="settings change">
+    <form ng-submit="updateSettings()">
+        <div class="list list-inset">
+            <label>Monthly Budget</label>
+            <label class="item item-input">
+                <i class="icon ion-social-usd"></i>
+                <input type="tel" placeholder="00.00" ng-model="settings.monthlyBudget" ui-number-mask="2" ui-hide-group-sep />
+            </label>
+        </div>
+        <div class="list list-inset">
+            <label>Goal</label>
+            <label class="item item-input">
+                <i class="icon ion-social-usd"></i>
+                <input type="tel" placeholder="00.00" ng-model="settings.bucketGoal" ui-number-mask="2" ui-hide-group-sep />
+            </label>
+        </div>
+        <div class="list list-inset">
+            <label>Goal Title</label>
+            <label class="item item-input item-stacked-label">
+                <input type="text" placeholder="john@suhr.com" ng-model="settings.bucketName">
+            </label>
+        </div>
+        <div class="padding">
+            <input type="submit" class="button button-calm button-block button-outline" value="Save Settings" />
+        </div>
+    </form>
+  </ion-content>
+</ion-view>

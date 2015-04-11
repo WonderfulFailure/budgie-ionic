@@ -14,6 +14,7 @@ angular.module('budgie.controllers', ['budgie.config'])
 
         // Fetch new data from Parse
         User.fetchFromParse(result.sessionToken);
+        User.fetchBucketsFromParse(result.sessionToken);
       });
   });
 
@@ -239,24 +240,15 @@ angular.module('budgie.controllers', ['budgie.config'])
 
       $scope.remainingBudget = remainingBudget;
 
-      $http({
-        method  : 'POST',
-        url     : 'https://api.parse.com/1/functions/GetUserBuckets',
-        headers : {
-          'X-Parse-Application-Id': parseConfig.appid,
-          'X-Parse-REST-API-Key': parseConfig.rest_key,
-          'X-Parse-Session-Token': user.sessionToken,
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
-      })
+      User.getUserBuckets()
       .success(function(data) {
           if(!data.error) {
-              contributedToBucket = data.result.progress;
+              contributedToBucket = data.progress;
               newContribution = contributedToBucket;
-              bucketGoal = data.result.goal;
+              bucketGoal = data.goal;
 
               $scope.goal.contributedToBucket = contributedToBucket;
-              $scope.goal.bucketName = data.result.title;
+              $scope.goal.bucketName = data.title;
 
               var rp1 = radialProgressSmall(document.getElementById('goal'))
                       .diameter(150)
@@ -457,4 +449,31 @@ angular.module('budgie.controllers', ['budgie.config'])
     $state.go('app.daily', {  }, { reload: true, inherit: false, notify: true });
   }
 
+})
+
+.controller('SettingsCtrl', function($scope, $rootScope, $http, $state, $stateParams, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicViewSwitcher, User, Intercom) {
+
+  $scope.settings = {
+    'monthlyBudget': '',
+    'bucketGoal': '',
+    'bucketName': ''
+  };
+
+  User.currentUser().then(function(user) {
+    $scope.settings.monthlyBudget = user.monthlyBudget / 100;
+  });
+
+  User.getUserBuckets().then(function(buckets) {
+    $scope.settings.bucketGoal = buckets.goal;
+    $scope.settings.bucketName = buckets.title;
+  });
+
+  $scope.updateSettings = function() {
+    User.update({ 'monthlyBudget': $scope.settings.monthlyBudget * 100 });
+    User.updateBuckets({ 'bucketGoal': $scope.settings.bucketGoal, 'bucketName': $scope.settings.bucketName });
+    $ionicHistory.nextViewOptions({
+      disableBack: true
+    });
+    $state.go('app.daily', {  }, { reload: true, inherit: false, notify: true });
+  }
 });

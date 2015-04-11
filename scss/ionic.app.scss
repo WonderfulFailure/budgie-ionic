@@ -16,7 +16,10 @@ $dark:                            #444 !default;
 */
 
 $budgie-blue: #3bd3dd;
+$budgie-gold: #eec60d;
+
 $calm: $budgie-blue;
+$energized: $budgie-gold;
 
 // The path for our ionicons font files, relative to the built CSS in www/css
 $ionicons-font-path: "../lib/ionic/fonts" !default;
@@ -30,5 +33,6 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 @import "design/daily";
 @import "design/header";
 @import "design/goals";
+@import "design/settings";
 
 @import "old.app.scss";

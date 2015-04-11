@@ -2,6 +2,7 @@ angular.module('budgie.services', ['ngStorage', 'budgie.config'])
 
 .factory('User', ['$http', '$localStorage', '$q', 'parseConfig', function($http, $localStorage, $q, parseConfig) {
   var currentUser;
+  var userBuckets;
 
   var User = {};
 
@@ -200,6 +201,103 @@ angular.module('budgie.services', ['ngStorage', 'budgie.config'])
 
   User.getUserObj = function() {
     return currentUser;
+  }
+
+  User.fetchBucketsFromParse = function(sessionToken) {
+    var deferred = $q.defer();
+    var promise = deferred.promise;
+
+    var request = $http({
+        method  : 'POST',
+        url     : 'https://api.parse.com/1/functions/GetUserBuckets',
+        headers : {
+          'X-Parse-Application-Id': parseConfig.appid,
+          'X-Parse-REST-API-Key': parseConfig.rest_key,
+          'X-Parse-Session-Token': sessionToken,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      })
+      .success(function(result) {
+        userBuckets = result.result;
+        deferred.resolve(userBuckets);
+      })
+      .error(function(error) {
+        deferred.reject(error);
+      });
+
+    promise.success = function(fn) {
+      promise.then(fn);
+      return promise;
+    }
+
+    promise.error = function(fn) {
+      promise.then(null, fn);
+      return promise;
+    }
+
+    return promise;
+  }
+
+  User.getUserBuckets = function() {
+    var deferred = $q.defer();
+    var promise = deferred.promise;
+
+    // User is logged in
+    if(userBuckets) {
+      deferred.resolve(userBuckets);
+    }
+    // User was logged in, need to fetch details again
+    else if($localStorage.sessionToken) {
+      User.fetchBucketsFromParse($localStorage.sessionToken)
+      .success(function(result) {
+        userBuckets = result;
+        deferred.resolve(userBuckets);
+      })
+      .error(function(error) {
+        deferred.reject(error);
+      });
+    }
+    // User never logged in
+    else {
+      deferred.reject('Not logged in');
+    }
+
+    promise.success = function(fn) {
+      promise.then(fn);
+      return promise;
+    }
+
+    promise.error = function(fn) {
+      promise.then(null, fn);
+      return promise;
+    }
+
+    return promise;
+  }
+
+  User.updateBuckets = function(newData, skipParse) {
+    if(skipParse === undefined) skipParse = false;
+
+    if(userBuckets) {
+      for(var key in newData) {
+        if(key == 'bucketGoal')
+          userBuckets['goal'] = newData[key];
+        else if(key == 'bucketName')
+          userBuckets['title'] = newData[key];
+        else
+          userBuckets[key] = newData[key];
+
+        console.log(userBuckets);
+      }
+
+      // Update parse data
+      // unless skipped
+      if(!skipParse) {
+        User.updateParse(newData);
+      }
+
+      return userBuckets;
+    }
   }
 
   return User;

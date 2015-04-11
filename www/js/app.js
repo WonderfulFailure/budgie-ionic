@@ -18,6 +18,7 @@ angular.module('budgie', ['ionic', 'angular-progress-arc', 'ui.utils.masks', 'bu
         User.currentUser().then(function(result) {
           Intercom.update(result.email);
           User.fetchFromParse(result.sessionToken);
+          User.fetchBucketsFromParse(result.sessionToken);
         });
       }, 0);
     });
@@ -35,7 +36,6 @@ angular.module('budgie', ['ionic', 'angular-progress-arc', 'ui.utils.masks', 'bu
   })
 
   .state('app.daily', {
-    cache: false,
     url: "/daily",
     views: {
       'menuContent': {
@@ -96,11 +96,43 @@ angular.module('budgie', ['ionic', 'angular-progress-arc', 'ui.utils.masks', 'bu
     }
   })
 
-  .state('app.feedback', {
-    url: "/feedback",
+  .state('app.settings', {
+    url: "/settings",
+    abstract: true,
     views: {
       'menuContent': {
-        templateUrl: "templates/feedback.html"
+        templateUrl: "templates/settings/settings.html",
+        controller: 'SettingsCtrl'
+      }
+    }
+  })
+
+  .state('app.settings.menu', {
+    url: "/menu",
+    views: {
+      'settingsContent': {
+        templateUrl: "templates/settings/menu.html",
+        controller: 'SettingsCtrl'
+      }
+    }
+  })
+
+  .state('app.settings.change', {
+    url: "/change",
+    views: {
+      'settingsContent': {
+        templateUrl: "templates/settings/change.html",
+        controller: 'SettingsCtrl'
+      }
+    }
+  })
+
+  .state('app.settings.feedback', {
+    url: "/feedback",
+    views: {
+      'settingsContent': {
+        templateUrl: "templates/settings/feedback.html",
+        controller: 'SettingsCtrl'
       }
     }
   });
