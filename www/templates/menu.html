@@ -9,7 +9,7 @@
       </ion-nav-buttons>
 
       <ion-nav-buttons side="right">
-        <a href="#/app/feedback" class="button button-icon button-clear">
+        <a href="#/app/feedback" class="button button-icon button-clear" ng-show="sideMenuVisible">
           Feedback
         </a>
       </ion-nav-buttons>
@@ -21,13 +21,13 @@
     <ion-content scroll="false" drag-content="false">
       <ion-list>
         <ion-item nav-clear menu-close href="#/app/daily">
-          Home
+          <i class="ion-home"></i> Home
         </ion-item>
         <ion-item nav-clear menu-close href="#/app/goals">
-          Goals
+          <i class="ion-ribbon-b"></i> Goals
         </ion-item>
-        <ion-item nav-clear menu-close ng-click="doLogout()">
-          Logout
+        <ion-item nav-clear menu-close href="" ng-click="doLogout()">
+          <i class="ion-log-out"></i> Logout
         </ion-item>
       </ion-list>
     </ion-content>

@@ -36,16 +36,6 @@
     margin: 0 auto;
 }
 
-#goal .arc {
-    fill: #eec60d;
-}
-
-#budget,
-#goal {
-    display: inline-block;
-    height:130px;
-}
-
 input[type=range]{
     -webkit-appearance: none;
 }
@@ -74,13 +64,4 @@ input[type=range]:focus {
 
 input[type=range]:focus::-webkit-slider-runnable-track {
     background: #ccc;
-}
-
-.contribution {
-    font-size: 56px;
-    font-weight: 100;
-}
-
-.bucket-labels {
-    font-weight:200;
 }

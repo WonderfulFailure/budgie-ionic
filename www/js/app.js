@@ -1,6 +1,6 @@
 angular.module('budgie', ['ionic', 'angular-progress-arc', 'ui.utils.masks', 'budgie.controllers', 'budgie.services', 'budgie.directives', 'budgie.config'])
 
-.run(function($ionicPlatform) {
+.run(function($ionicPlatform, User, Intercom) {
   $ionicPlatform.ready(function() {
     ionic.Platform.fullScreen();
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
@@ -12,6 +12,15 @@ angular.module('budgie', ['ionic', 'angular-progress-arc', 'ui.utils.masks', 'bu
     if (window.StatusBar) {
       StatusBar.hide();
     }
+
+    $ionicPlatform.on("resume", function() {
+      setTimeout(function() {
+        User.currentUser().then(function(result) {
+          Intercom.update(result.email);
+          User.fetchFromParse(result.sessionToken);
+        });
+      }, 0);
+    });
   });
 })
 
@@ -32,17 +41,6 @@ angular.module('budgie', ['ionic', 'angular-progress-arc', 'ui.utils.masks', 'bu
       'menuContent': {
         templateUrl: "templates/daily.html",
         controller: 'DailyCtrl'
-      }
-    }
-  })
-
-  .state('app.spend', {
-    cache: false,
-    url: "/spend",
-    views: {
-      'menuContent': {
-        templateUrl: "templates/spend.html",
-        controller: 'SpendCtrl'
       }
     }
   })

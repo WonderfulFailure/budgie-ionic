@@ -15,12 +15,12 @@ angular.module('budgie.controllers', ['budgie.config'])
         // Fetch new data from Parse
         User.fetchFromParse(result.sessionToken);
       });
+  });
 
-      // Keep our local user up to date when it changes
-      // (useful for when Parse finishes its update)
-      $rootScope.$watch(function () { return User.getUserObj() }, function (newVal, oldVal) {
-          User.update(newVal, true);
-      });
+  // Keep our local user up to date when it changes
+  // (useful for when Parse finishes its update)
+  $rootScope.$watch(function () { return User.getUserObj() }, function (newVal, oldVal) {
+    User.update(newVal, true);
   });
 
   // Form data for the login modal
@@ -117,6 +117,7 @@ angular.module('budgie.controllers', ['budgie.config'])
       // d3
       var rp1 = radialProgress(document.getElementById('daily'))
                 .diameter(300)
+                .currentArc2(0)
                 .value(result.todaysBudget)
                 .maxValue(result.dailyBudget)
                 .render();
@@ -182,6 +183,8 @@ angular.module('budgie.controllers', ['budgie.config'])
       // d3
       var rp1 = radialProgress(document.getElementById('daily'))
                 .diameter(300)
+                .value(0)
+                .currentArc(0)
                 .value(newBalance)
                 .maxValue(user.dailyBudget)
                 .render();
@@ -190,6 +193,12 @@ angular.module('budgie.controllers', ['budgie.config'])
       $scope.showLogin();
     });
   }
+
+  $scope.$watch(function () { return User.getUserObj() }, function (newVal, oldVal) {
+    if(typeof newVal !== 'undefined' && typeof oldVal !== 'undefined' && newVal.todaysBudget && newVal.todaysBudget != oldVal.todaysBudget) {
+      $scope.getDaily();
+    }
+  }, true);
 
   // Get fresh transactions after logging in
   $scope.$on('modal.hidden', function(modal) {
@@ -314,6 +323,7 @@ angular.module('budgie.controllers', ['budgie.config'])
     }
 
     $scope.changeBucketName = function() {
+      var oldBucketName = $scope.goal.bucketName;
       $ionicPopup.show({
         template: '<label class="item item-input"><input type="text" ng-model="goal.bucketName"></label>',
         title: 'Enter new Goal Name',
@@ -326,7 +336,6 @@ angular.module('budgie.controllers', ['budgie.config'])
             type: 'button-calm',
             onTap: function(e) {
               if (!$scope.goal.bucketName) {
-                //don't allow the user to close unless he enters wifi password
                 e.preventDefault();
               } else {
                 return $scope.goal.bucketName;
@@ -339,6 +348,9 @@ angular.module('budgie.controllers', ['budgie.config'])
         if(bucketName) {
           User.update({ 'bucketName': bucketName });
           IntercomTrackEvent('changed-settings', {'setting': 'Goal Title', 'Goal Title': bucketName});
+        }
+        else {
+          $scope.goal.bucketName = oldBucketName;
         }
       });
     }
@@ -357,7 +369,6 @@ angular.module('budgie.controllers', ['budgie.config'])
             type: 'button-calm',
             onTap: function(e) {
               if (!$scope.goal.bucketGoal) {
-                //don't allow the user to close unless he enters wifi password
                 e.preventDefault();
               } else {
                 return $scope.goal.bucketGoal;

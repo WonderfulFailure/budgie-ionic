@@ -1,0 +1,30 @@
+#goal .arc {
+    fill: #eec60d;
+}
+
+#budget,
+#goal {
+    display: inline-block;
+    height:130px;
+}
+
+.contribution {
+    font-size: 56px;
+    font-weight: 100;
+}
+
+.bucket-labels {
+    font-weight: 200;
+    margin-bottom: 20px;
+}
+
+.bucket-label {
+    width: 120px;
+    display: inline-block;
+    text-align: center;
+}
+
+.bucket-labels .bucket-label:last-child {
+    padding-right: 10px;
+    margin-left: 10px;
+}

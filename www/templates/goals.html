@@ -1,22 +1,22 @@
 <ion-view view-title="Save Money">
     <ion-content scroll="false" drag-content="false">
         <div class="row">
-            <div style="margin:0 auto;width:275px;">
-                <div class="padding">
+            <div style="margin:0 auto;">
                     <div id="budget"></div>
                     <div id="goal" ng-click="changeBucketGoal()"></div>
-                </div>
             </div>
         </div>
         <div class="bucket-labels">
             <div class="row">
-                <div class="col col-offset-20 col-20">
-                    Today's balance
-                </div>
-                <div class="col col-offset-20 col-20">
-                    <span ng-click="changeBucketName()">
-                        {{ goal.bucketName }}
-                    </span>
+                <div style="margin: 0 auto;">
+                    <div class="bucket-label">
+                        Today's balance
+                    </div>
+                    <div class="bucket-label">
+                        <span ng-click="changeBucketName()">
+                            {{ goal.bucketName }}
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>

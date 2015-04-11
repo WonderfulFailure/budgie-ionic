@@ -24,11 +24,11 @@ $ionicons-font-path: "../lib/ionic/fonts" !default;
 // Include all of Ionic
 @import "www/lib/ionic/scss/ionic";
 
+@import "components/input";
+@import "components/menu";
+
 @import "design/daily";
 @import "design/header";
+@import "design/goals";
 
 @import "old.app.scss";
-
-input[type="tel"] {
-    text-align: right;
-}
