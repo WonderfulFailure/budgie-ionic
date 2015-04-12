@@ -2,14 +2,52 @@
     <ion-content scroll="false" drag-content="false">
         <h2 class="text-center">Save Money</h2>
         <div class="row">
-            <div style="margin:0 auto;">
-                    <div id="budget"></div>
-                    <div id="goal" ng-click="changeBucketGoal()"></div>
+            <div class="radial small">
+                <progress-arc
+                    size="125"
+                    stroke="#3bd3dd"
+                    stroke-width="15"
+                    complete="goal.dailyComplete || 0"
+                    counter-clockwise="false"
+                    background="#eee">
+                </progress-arc>
+
+                <progress-arc
+                    class="inner"
+                    size="95"
+                    stroke="#259dd9"
+                    stroke-width="5"
+                    complete="goal.rolloverComplete || 0"
+                    counter-clockwise="false">
+                </progress-arc>
+
+                <progress-arc
+                    class="inner two"
+                    size="85"
+                    stroke="#2575d9"
+                    stroke-width="2.5"
+                    complete="goal.secondaryRolloverComplete || 0"
+                    counter-clockwise="false">
+                </progress-arc>
+
+                <label class="current" ng-show="goal.todaysBudget">${{ goal.todaysBudget / 100 | number:2 }}</label>
+            </div>
+
+            <div class="radial small" ng-click="changeBucketGoal()">
+                <progress-arc
+                    size="125"
+                    stroke="#eec60d"
+                    stroke-width="15"
+                    complete="goal.goalComplete || 0"
+                    counter-clockwise="false"
+                    background="#eee">
+                </progress-arc>
+
+                <label class="current" ng-show="goal.bucketProgress">${{ goal.bucketProgress / 100 | number:2 }}</label>
             </div>
         </div>
         <div class="bucket-labels">
             <div class="row">
-                <div style="margin: 0 auto;">
                     <div class="bucket-label">
                         Today's balance
                     </div>
@@ -18,7 +56,6 @@
                             {{ goal.bucketName }}
                         </span>
                     </div>
-                </div>
             </div>
         </div>
         <div class="row">
@@ -29,7 +66,7 @@
         <form ng-submit="processForm()">
             <div class="row">
                 <div class="col text-center">
-                    <input type="range" style="border:none;-webkit-box-shadow:none;width:80%;margin:0 auto;" class="form-control" min="0" max="{{ remainingBudget }}" value="100" step="1" ng-change="updateSlider($event)" ng-model="goal.amount">
+                    <input type="range" style="border:none;-webkit-box-shadow:none;width:80%;margin:0 auto;" class="form-control" min="0" max="{{ goal.maxBucketContribution }}" step="1" ng-change="updateSlider($event)" ng-model="goal.amount">
                 </div>
             </div>
             <div class="padding">

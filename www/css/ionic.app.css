@@ -7606,6 +7606,47 @@ a.button {
 input[type="tel"] {
   text-align: right; }
 
+.radial {
+  width: 200px;
+  height: 200px;
+  margin: 0 auto;
+  position: relative; }
+  .radial .inner {
+    position: absolute;
+    top: 20px;
+    left: 20px; }
+    .radial .inner.two {
+      top: 30px;
+      left: 30px; }
+  .radial circle {
+    transition: stroke-dashoffset 1s cubic-bezier(0.455, 0.03, 0.515, 0.955); }
+  .radial label {
+    position: absolute;
+    top: 75px;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    display: block;
+    width: 125px;
+    font-size: 32px;
+    text-align: center; }
+    .radial label.daily {
+      top: 106px;
+      font-size: 16px;
+      font-weight: 100; }
+  .radial.small {
+    width: 125px;
+    height: 125px; }
+    .radial.small .inner {
+      top: 15px;
+      left: 15px; }
+      .radial.small .inner.two {
+        top: 20px;
+        left: 20px; }
+    .radial.small label {
+      font-size: 18px;
+      top: 50px; }
+
 /* entire container, keeps perspective */
 .flip-container {
   -webkit-perspective: 1000;
@@ -7678,38 +7719,15 @@ h2 {
   margin-bottom: 20px; }
 
 .bucket-label {
-  width: 120px;
+  width: 125px;
+  margin: 0 auto;
   display: inline-block;
   text-align: center; }
-
-.bucket-labels .bucket-label:last-child {
-  padding-right: 10px;
-  margin-left: 10px; }
 
 .settings.change label:not(.item) {
   text-transform: uppercase;
   font-size: 18px;
   font-weight: 100; }
-
-.background {
-  fill: #FFFFFF;
-  fill-opacity: 0.01; }
-
-.component {
-  fill: #e1e1e1; }
-
-.component .label {
-  font-family: Myriad, "Helvetic Neue", Helvetica, Arial;
-  text-anchor: middle;
-  fill: #0000FF; }
-
-.arc {
-  stroke-weight: 0.1;
-  fill: #3bd3dd; }
-
-.arc2 {
-  stroke-weight: 0.1;
-  fill: #259dd9; }
 
 .label {
   font-family: Myriad, "Helvetic Neue", Helvetica, Arial;

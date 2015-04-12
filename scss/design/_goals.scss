@@ -19,12 +19,8 @@
 }
 
 .bucket-label {
-    width: 120px;
+    width: 125px;
+    margin: 0 auto;
     display: inline-block;
     text-align: center;
-}
-
-.bucket-labels .bucket-label:last-child {
-    padding-right: 10px;
-    margin-left: 10px;
 }

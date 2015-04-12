@@ -94,7 +94,7 @@ angular.module('budgie.controllers', ['budgie.config'])
 
 .controller('DailyCtrl', function($scope, $rootScope, $http, $state, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicPopup, $ionicLoading, User, Transactions, Intercom) {
 
-  $scope.daily = { 'today': new Date() };
+  $scope.daily = { 'today': new Date(), 'radialSize': 200 };
   $scope.user = {};
 
   $rootScope.sideMenuVisible = true;
@@ -115,14 +115,29 @@ angular.module('budgie.controllers', ['budgie.config'])
     User.currentUser().then(function(result) {
       $scope.user = result;
 
-      // d3
-      var rp1 = radialProgress(document.getElementById('daily'))
-                .diameter(300)
-                .currentArc2(0)
-                .value(result.todaysBudget)
-                .maxValue(result.dailyBudget)
-                .render();
+      $scope.daily.todaysBudget = result.todaysBudget;
+      $scope.daily.dailyBudget = result.dailyBudget;
 
+      if($scope.daily.todaysBudget > $scope.daily.dailyBudget) {
+        $scope.daily.dailyComplete = 1.0;
+        $scope.daily.rollover = $scope.daily.todaysBudget - $scope.daily.dailyBudget;
+        $scope.daily.rolloverComplete = $scope.daily.rollover / $scope.daily.dailyBudget;
+        if($scope.daily.rolloverComplete > 1) {
+          $scope.daily.rolloverComplete = 1;
+          $scope.daily.secondaryRollover = $scope.daily.rollover - $scope.daily.dailyBudget;
+          $scope.daily.secondaryRolloverComplete = $scope.daily.secondaryRollover / $scope.daily.dailyBudget;
+          if($scope.daily.secondaryRolloverComplete > 1) $scope.daily.secondaryRolloverComplete = 1.0;
+        }
+        else {
+          $scope.daily.secondaryRolloverComplete = 0.0;
+        }
+      }
+      else {
+        $scope.daily.dailyComplete = $scope.daily.todaysBudget / $scope.daily.dailyBudget;
+        $scope.daily.rolloverComplete = 0.0;
+      }
+
+      console.log($scope.daily);
 
     }, function(error) {
       $scope.showLogin();
@@ -181,15 +196,6 @@ angular.module('budgie.controllers', ['budgie.config'])
       // Add the transaction to parse
       Transactions.addTransaction(user, amount);
 
-      // d3
-      var rp1 = radialProgress(document.getElementById('daily'))
-                .diameter(300)
-                .value(0)
-                .currentArc(0)
-                .value(newBalance)
-                .maxValue(user.dailyBudget)
-                .render();
-
     }, function(error) {
       $scope.showLogin();
     });
@@ -211,173 +217,179 @@ angular.module('budgie.controllers', ['budgie.config'])
 
 .controller('GoalCtrl', function($scope, $http, $state, $localStorage, $ionicHistory, $ionicPopup, parseConfig, User, Intercom) {
   $scope.goal = {};
-  $scope.goal.amount = "00.00";
+  $scope.goal.amount = 0;
 
   if(!$localStorage.seenSettingsPopup) {
     // An alert dialog
-      $ionicPopup.alert({
-        title: 'Did you know that...',
-         template: 'You can change your goal value and title by tapping on them.',
-         buttons: [{ text: 'Now I know!', type: 'button-calm' }]
-       })
-      .then(function() {
-        $localStorage.seenSettingsPopup = true;
-      });
+    $ionicPopup.alert({
+      title: 'Did you know that...',
+       template: 'You can change your goal value and title by tapping on them.',
+       buttons: [{ text: 'Now I know!', type: 'button-calm' }]
+     })
+    .then(function() {
+      $localStorage.seenSettingsPopup = true;
+    });
   }
 
-    var contributedToBucket;
-    var newContribution = 0;
-    var bucketGoal;
+  var contributedToBucket;
+  var newContribution = 0;
+  var bucketGoal;
 
-    var dailyBudget;
-    var remainingBudget;
-    var newBudget = 0;
+  var dailyBudget;
+  var remainingBudget;
+  var newBudget = 0;
 
-    User.currentUser().then(function(user) {
-      dailyBudget = user.dailyBudget;
-      remainingBudget = user.todaysBudget;
-      newBudget = remainingBudget;
+  User.currentUser().then(function(user) {
 
-      $scope.remainingBudget = remainingBudget;
+    $scope.goal.dailyBudget = user.dailyBudget;
+    $scope.goal.todaysBudget = user.todaysBudget;
+    $scope.goal.originalTodaysBudget = user.todaysBudget;
 
-      User.getUserBuckets()
-      .success(function(data) {
-          if(!data.error) {
-              contributedToBucket = data.progress;
-              newContribution = contributedToBucket;
-              bucketGoal = data.goal;
+    User.getUserBuckets()
+    .success(function(data) {
+        if(!data.error) {
+          $scope.goal.bucketProgress = data.progress;
+          $scope.goal.originalBucketProgress = data.progress;
+          $scope.goal.bucketGoal = data.goal;
+          $scope.goal.bucketName = data.title;
 
-              $scope.goal.contributedToBucket = contributedToBucket;
-              $scope.goal.bucketName = data.title;
+          $scope.goal.goalComplete = $scope.goal.bucketProgress / $scope.goal.bucketGoal;
+          if($scope.goal.goalComplete > 1) $scope.goal.goalComplete = 1;
 
-              var rp1 = radialProgressSmall(document.getElementById('goal'))
-                      .diameter(150)
-                      .value(contributedToBucket)
-                      .maxValue(bucketGoal)
-                      .render();
-              var rp2 = radialProgressSmall(document.getElementById('budget'))
-                      .diameter(150)
-                      .value(remainingBudget)
-                      .maxValue(dailyBudget)
-                      .innerLabel(remainingBudget)
-                      .render();
-          }
+          $scope.goal.maxBucketContribution = $scope.goal.bucketGoal - $scope.goal.bucketProgress;
 
-          $scope.$watch(function () { return User.getUserObj() }, function (newVal, oldVal) {
-            if(newVal && newVal.todaysBudget && newVal.todaysBudget != oldVal.todaysBudget) {
-              remainingBudget = newVal.todaysBudget;
-              $scope.updateSlider();
-            }
-          });
-      });
-    });
-
-    $scope.updateSlider = function(event) {
-        var rp1 = radialProgressSmall(document.getElementById('goal'))
-            .diameter(150)
-            .currentArc(parseFloat(newContribution / bucketGoal) * (2*Math.PI))
-            .value(parseInt($scope.goal.amount) + parseInt(contributedToBucket))
-            .maxValue(parseInt(bucketGoal))
-            .render();
-        newContribution = parseInt($scope.goal.amount) + parseInt(contributedToBucket);
-        var rp2 = radialProgressSmall(document.getElementById('budget'))
-            .diameter(150)
-            .currentArc(parseFloat(newBudget / dailyBudget) * (2*Math.PI))
-            .currentArc2(0)
-            .value(remainingBudget - parseInt($scope.goal.amount))
-            .maxValue(dailyBudget)
-            .innerLabel(remainingBudget)
-            .render();
-        newBudget = remainingBudget - parseInt($scope.goal.amount);
-    }
-
-    $scope.processForm = function() {
-      User.currentUser().then(function(user) {
-        User.update({ 'todaysBudget': user.todaysBudget - $scope.goal.amount }, true);
-        Intercom.trackEvent('saved-money');
-        $http({
-          method  : 'POST',
-          url     : 'https://api.parse.com/1/functions/AddBucketContribution',
-          data    : 'amount=' + $scope.goal.amount / 100,
-          headers : {
-            'X-Parse-Application-Id': parseConfig.appid,
-            'X-Parse-REST-API-Key': parseConfig.rest_key,
-            'X-Parse-Session-Token': user.sessionToken,
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        });
-
-        $ionicHistory.nextViewOptions({
-          disableBack: true
-        });
-        $state.go('app.daily', { transactions: [] }, { reload: true, inherit: false, notify: true });
-      });
-    }
-
-    $scope.changeBucketName = function() {
-      var oldBucketName = $scope.goal.bucketName;
-      $ionicPopup.show({
-        template: '<label class="item item-input"><input type="text" ng-model="goal.bucketName"></label>',
-        title: 'Enter new Goal Name',
-        subTitle: 'Just text, please.',
-        scope: $scope,
-        buttons: [
-          { text: 'Cancel' },
-          {
-            text: '<b>Save</b>',
-            type: 'button-calm',
-            onTap: function(e) {
-              if (!$scope.goal.bucketName) {
-                e.preventDefault();
-              } else {
-                return $scope.goal.bucketName;
-              }
-            }
-          }
-        ]
-      })
-      .then(function(bucketName) {
-        if(bucketName) {
-          User.update({ 'bucketName': bucketName });
-          IntercomTrackEvent('changed-settings', {'setting': 'Goal Title', 'Goal Title': bucketName});
-        }
-        else {
-          $scope.goal.bucketName = oldBucketName;
-        }
-      });
-    }
-
-    $scope.changeBucketGoal = function() {
-      $scope.goal.bucketGoal = parseFloat(bucketGoal / 100).toFixed(2);
-      $ionicPopup.show({
-        template: '<label class="item item-input"><i class="icon ion-social-usd"></i><input type="tel" placeholder="00.00" ng-model="goal.bucketGoal" ui-number-mask="2" ui-hide-group-sep /></label>',
-        title: 'Enter new Goal',
-        subTitle: 'Just dollars, please.',
-        scope: $scope,
-        buttons: [
-          { text: 'Cancel' },
-          {
-            text: '<b>Save</b>',
-            type: 'button-calm',
-            onTap: function(e) {
-              if (!$scope.goal.bucketGoal) {
-                e.preventDefault();
-              } else {
-                return $scope.goal.bucketGoal;
-              }
-            }
-          }
-        ]
-      })
-      .then(function(newBucketGoal) {
-        if(newBucketGoal) {
-          bucketGoal = newBucketGoal * 100;
-          User.update({ 'bucketGoal': newBucketGoal * 100 });
           $scope.updateSlider();
-          IntercomTrackEvent('changed-settings', {'setting': 'Goal Amount'});
+        }
+
+        $scope.$watch(function () { return User.getUserObj() }, function (newVal, oldVal) {
+          if(newVal && newVal.todaysBudget && newVal.todaysBudget != oldVal.todaysBudget) {
+            remainingBudget = newVal.todaysBudget;
+            $scope.updateSlider();
+          }
+        });
+    });
+  });
+
+  $scope.updateSlider = function() {
+    $scope.goal.todaysBudget = $scope.goal.originalTodaysBudget - $scope.goal.amount;
+
+    if($scope.goal.todaysBudget > $scope.goal.dailyBudget) {
+      $scope.goal.dailyComplete = 1.0;
+      $scope.goal.rollover = $scope.goal.todaysBudget - $scope.goal.dailyBudget;
+      $scope.goal.rolloverComplete = $scope.goal.rollover / $scope.goal.dailyBudget;
+      if($scope.goal.rolloverComplete > 1) {
+        $scope.goal.rolloverComplete = 1;
+        $scope.goal.secondaryRollover = $scope.goal.rollover - $scope.goal.dailyBudget;
+        $scope.goal.secondaryRolloverComplete = $scope.goal.secondaryRollover / $scope.goal.dailyBudget;
+        if($scope.goal.secondaryRolloverComplete > 1) $scope.goal.secondaryRolloverComplete = 1.0;
+      }
+      else {
+        $scope.goal.secondaryRolloverComplete = 0.0;
+      }
+    }
+    else {
+      $scope.goal.dailyComplete = $scope.goal.todaysBudget / $scope.goal.dailyBudget;
+      $scope.goal.rolloverComplete = 0.0;
+    }
+
+    $scope.goal.bucketProgress = $scope.goal.originalBucketProgress + parseInt($scope.goal.amount);
+    $scope.goal.goalComplete = $scope.goal.bucketProgress / $scope.goal.bucketGoal;
+  }
+
+  $scope.processForm = function() {
+    User.currentUser().then(function(user) {
+      User.update({ 'todaysBudget': user.todaysBudget - $scope.goal.amount }, true);
+      Intercom.trackEvent('saved-money');
+      $http({
+        method  : 'POST',
+        url     : 'https://api.parse.com/1/functions/AddBucketContribution',
+        data    : 'amount=' + $scope.goal.amount / 100,
+        headers : {
+          'X-Parse-Application-Id': parseConfig.appid,
+          'X-Parse-REST-API-Key': parseConfig.rest_key,
+          'X-Parse-Session-Token': user.sessionToken,
+          'Content-Type': 'application/x-www-form-urlencoded'
         }
       });
-    }
+
+      $ionicHistory.nextViewOptions({
+        disableBack: true
+      });
+      $state.go('app.daily', { transactions: [] }, { reload: true, inherit: false, notify: true });
+    });
+  }
+
+  $scope.changeBucketName = function() {
+    var oldBucketName = $scope.goal.bucketName;
+    $ionicPopup.show({
+      template: '<label class="item item-input"><input type="text" ng-model="goal.bucketName"></label>',
+      title: 'Enter new Goal Name',
+      subTitle: 'Just text, please.',
+      scope: $scope,
+      buttons: [
+        { text: 'Cancel' },
+        {
+          text: '<b>Save</b>',
+          type: 'button-calm',
+          onTap: function(e) {
+            if (!$scope.goal.bucketName) {
+              e.preventDefault();
+            } else {
+              return $scope.goal.bucketName;
+            }
+          }
+        }
+      ]
+    })
+    .then(function(bucketName) {
+      if(bucketName) {
+        User.update({ 'bucketName': bucketName });
+        IntercomTrackEvent('changed-settings', {'setting': 'Goal Title', 'Goal Title': bucketName});
+      }
+      else {
+        $scope.goal.bucketName = oldBucketName;
+      }
+    });
+  }
+
+  $scope.changeBucketGoal = function() {
+    $scope.goal.oldGoal = $scope.goal.bucketGoal;
+    $scope.goal.bucketGoal = $scope.goal.bucketGoal / 100;
+    $ionicPopup.show({
+      template: '<label class="item item-input"><i class="icon ion-social-usd"></i><input type="tel" placeholder="00.00" ng-model="goal.bucketGoal" ui-number-mask="2" ui-hide-group-sep /></label>',
+      title: 'Enter new Goal',
+      subTitle: 'Just dollars, please.',
+      scope: $scope,
+      buttons: [
+        { text: 'Cancel' },
+        {
+          text: '<b>Save</b>',
+          type: 'button-calm',
+          onTap: function(e) {
+            if (!$scope.goal.bucketGoal) {
+              e.preventDefault();
+            } else {
+              return $scope.goal.bucketGoal;
+            }
+          }
+        }
+      ]
+    })
+    .then(function(newBucketGoal) {
+      if(newBucketGoal) {
+        $scope.goal.bucketGoal = newBucketGoal * 100;
+        $scope.goal.maxBucketContribution = $scope.goal.bucketGoal - $scope.goal.bucketProgress;
+
+        if($scope.goal.amount > $scope.goal.maxBucketContribution) $scope.goal.amount = $scope.goal.maxBucketContribution;
+
+        Intercom.trackEvent('changed-settings', {'setting': 'Goal Amount'});
+        User.update({ 'bucketGoal': $scope.goal.bucketGoal });
+      }
+      else {
+        $scope.goal.bucketGoal = $scope.goal.oldGoal;
+      }
+    });
+  }
 })
 
 .controller('WelcomeCtrl', function($scope, $rootScope, $http, $state, $stateParams, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicViewSwitcher, User, Intercom) {

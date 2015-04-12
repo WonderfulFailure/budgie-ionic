@@ -1,7 +1,37 @@
 <ion-view view-title="">
   <ion-content scroll="false" drag-content="false">
     <h2 class="text-center">{{ daily.today | date : 'EEEE, MMMM d' }}</h2>
-    <div id="daily" style="margin:20px 0 0 0" ng-click="changeMonthlyBudget()"></div>
+    <div class="radial">
+        <progress-arc
+            size="200"
+            stroke="#3bd3dd"
+            stroke-width="20"
+            complete="daily.dailyComplete || 0"
+            counter-clockwise="false"
+            background="#eee">
+        </progress-arc>
+
+        <progress-arc
+            class="inner"
+            size="160"
+            stroke="#259dd9"
+            stroke-width="10"
+            complete="daily.rolloverComplete || 0"
+            counter-clockwise="false">
+        </progress-arc>
+
+        <progress-arc
+            class="inner two"
+            size="140"
+            stroke="#2575d9"
+            stroke-width="5"
+            complete="daily.secondaryRolloverComplete || 0"
+            counter-clockwise="false">
+        </progress-arc>
+
+        <label class="current" ng-show="daily.todaysBudget">${{ daily.todaysBudget / 100 | number:2 }}</label>
+        <label class="daily" ng-show="daily.dailyBudget">/ ${{ daily.dailyBudget / 100 | number:2 }}</label>
+    </div>
     <div class="flip-container" ng-class="{ 'flip': daily.toggleFlip }" ng-init="daily.toggleFlip = false;">
         <div class="flipper">
             <div class="front">
