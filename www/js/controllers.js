@@ -11,10 +11,6 @@ angular.module('budgie.controllers', ['budgie.config'])
   $rootScope.$on( "$ionicView.enter", function( scopes, states ) {
       User.currentUser().then(function(result) {
         Intercom.update(result.email);
-
-        // Fetch new data from Parse
-        User.fetchFromParse(result.sessionToken);
-        User.fetchBucketsFromParse(result.sessionToken);
       });
   });
 
@@ -94,7 +90,7 @@ angular.module('budgie.controllers', ['budgie.config'])
 
 .controller('DailyCtrl', function($scope, $rootScope, $http, $state, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicPopup, $ionicLoading, User, Transactions, Intercom) {
 
-  $scope.daily = { 'today': new Date(), 'radialSize': 200 };
+  $scope.daily = { 'today': new Date() };
   $scope.user = {};
 
   $rootScope.sideMenuVisible = true;
@@ -136,8 +132,6 @@ angular.module('budgie.controllers', ['budgie.config'])
         $scope.daily.dailyComplete = $scope.daily.todaysBudget / $scope.daily.dailyBudget;
         $scope.daily.rolloverComplete = 0.0;
       }
-
-      console.log($scope.daily);
 
     }, function(error) {
       $scope.showLogin();
@@ -216,8 +210,9 @@ angular.module('budgie.controllers', ['budgie.config'])
 })
 
 .controller('GoalCtrl', function($scope, $http, $state, $localStorage, $ionicHistory, $ionicPopup, parseConfig, User, Intercom) {
-  $scope.goal = {};
-  $scope.goal.amount = 0;
+  $scope.goal = {
+    'amount': 0,
+  };
 
   if(!$localStorage.seenSettingsPopup) {
     // An alert dialog
@@ -231,42 +226,31 @@ angular.module('budgie.controllers', ['budgie.config'])
     });
   }
 
-  var contributedToBucket;
-  var newContribution = 0;
-  var bucketGoal;
-
-  var dailyBudget;
-  var remainingBudget;
-  var newBudget = 0;
-
   User.currentUser().then(function(user) {
 
     $scope.goal.dailyBudget = user.dailyBudget;
     $scope.goal.todaysBudget = user.todaysBudget;
     $scope.goal.originalTodaysBudget = user.todaysBudget;
 
+    $scope.updateSlider();
+
     User.getUserBuckets()
     .success(function(data) {
-        if(!data.error) {
-          $scope.goal.bucketProgress = data.progress;
-          $scope.goal.originalBucketProgress = data.progress;
-          $scope.goal.bucketGoal = data.goal;
-          $scope.goal.bucketName = data.title;
+      $scope.goal.bucketProgress = data.progress;
+      $scope.goal.originalBucketProgress = data.progress;
+      $scope.goal.bucketGoal = data.goal;
+      $scope.goal.bucketName = data.title;
 
-          $scope.goal.goalComplete = $scope.goal.bucketProgress / $scope.goal.bucketGoal;
-          if($scope.goal.goalComplete > 1) $scope.goal.goalComplete = 1;
+      $scope.goal.goalComplete = $scope.goal.bucketProgress / $scope.goal.bucketGoal;
+      if($scope.goal.goalComplete > 1) $scope.goal.goalComplete = 1;
 
-          $scope.goal.maxBucketContribution = $scope.goal.bucketGoal - $scope.goal.bucketProgress;
+      $scope.goal.maxBucketContribution = $scope.goal.bucketGoal - $scope.goal.bucketProgress;
 
+      $scope.$watch(function () { return User.getUserObj() }, function (newVal, oldVal) {
+        if(newVal && newVal.todaysBudget && newVal.todaysBudget != oldVal.todaysBudget) {
           $scope.updateSlider();
         }
-
-        $scope.$watch(function () { return User.getUserObj() }, function (newVal, oldVal) {
-          if(newVal && newVal.todaysBudget && newVal.todaysBudget != oldVal.todaysBudget) {
-            remainingBudget = newVal.todaysBudget;
-            $scope.updateSlider();
-          }
-        });
+      });
     });
   });
 
@@ -344,7 +328,7 @@ angular.module('budgie.controllers', ['budgie.config'])
     .then(function(bucketName) {
       if(bucketName) {
         User.update({ 'bucketName': bucketName });
-        IntercomTrackEvent('changed-settings', {'setting': 'Goal Title', 'Goal Title': bucketName});
+        Intercom.trackEvent('changed-settings', {'setting': 'Goal Title', 'Goal Title': bucketName});
       }
       else {
         $scope.goal.bucketName = oldBucketName;
