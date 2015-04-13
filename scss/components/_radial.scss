@@ -1,3 +1,8 @@
+// In seconds
+$radial-animation-speed: 1;
+$radial-animation-inner-delay: 0; //$radial-animation-speed;
+$radial-animation-inner-two-delay: 0; //$radial-animation-speed * 2;
+
 .radial {
     width: 200px;
     height: 200px;
@@ -12,14 +17,50 @@
         &.two {
             top: 30px;
             left: 30px;
+
+            circle {
+                transition-delay: #{$radial-animation-inner-two-delay}s;
+            }
+        }
+
+        circle {
+            transition-delay: #{$radial-animation-inner-delay}s;
         }
     }
 
     circle {
-        transition: stroke-dashoffset 1s cubic-bezier(0.455, 0.03, 0.515, 0.955);
+        transition: stroke-dashoffset #{$radial-animation-speed}s cubic-bezier(0.455, 0.03, 0.515, 0.955);
 
         ion-view[nav-view="entering"] & {
             transition: none;
+        }
+    }
+
+    &.nodelay {
+        circle {
+            transition-delay: 0s!important;
+        }
+    }
+
+    &.inversedelay {
+        circle {
+            transition-delay: #{$radial-animation-inner-two-delay}s;
+        }
+
+        .inner {
+            circle {
+                transition-delay: #{$radial-animation-inner-delay}s;
+            }
+
+            &.two circle {
+                transition-delay: 0s;
+            }
+        }
+    }
+
+    &.noanim {
+        circle {
+            transition: none!important;
         }
     }
 

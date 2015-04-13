@@ -90,7 +90,7 @@ angular.module('budgie.controllers', ['budgie.config'])
 
 .controller('DailyCtrl', function($scope, $rootScope, $http, $state, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicPopup, $ionicLoading, User, Transactions, Intercom) {
 
-  $scope.daily = { 'today': new Date() };
+  $scope.daily = { 'today': new Date(), 'toggleBounce': false };
   $scope.user = {};
 
   $rootScope.sideMenuVisible = true;
@@ -109,10 +109,15 @@ angular.module('budgie.controllers', ['budgie.config'])
 
   $scope.getDaily = function() {
     User.currentUser().then(function(result) {
+      User.fetchBucketsFromParse(result.sessionToken);
+
       $scope.user = result;
 
       $scope.daily.todaysBudget = result.todaysBudget;
       $scope.daily.dailyBudget = result.dailyBudget;
+
+      $scope.daily.toggleBounce = false;
+      $scope.daily.toggleBounce = true;
 
       if($scope.daily.todaysBudget > $scope.daily.dailyBudget) {
         $scope.daily.dailyComplete = 1.0;
@@ -131,6 +136,7 @@ angular.module('budgie.controllers', ['budgie.config'])
       else {
         $scope.daily.dailyComplete = $scope.daily.todaysBudget / $scope.daily.dailyBudget;
         $scope.daily.rolloverComplete = 0.0;
+        $scope.daily.secondaryRolloverComplete = 0.0;
       }
 
     }, function(error) {
@@ -246,6 +252,9 @@ angular.module('budgie.controllers', ['budgie.config'])
 
       $scope.goal.maxBucketContribution = $scope.goal.bucketGoal - $scope.goal.bucketProgress;
 
+      if($scope.goal.maxBucketContribution > $scope.goal.todaysBudget)
+        $scope.goal.maxBucketContribution = $scope.goal.todaysBudget;
+
       $scope.$watch(function () { return User.getUserObj() }, function (newVal, oldVal) {
         if(newVal && newVal.todaysBudget && newVal.todaysBudget != oldVal.todaysBudget) {
           $scope.updateSlider();
@@ -295,6 +304,8 @@ angular.module('budgie.controllers', ['budgie.config'])
           'Content-Type': 'application/x-www-form-urlencoded'
         }
       });
+
+      $scope.goal.amount = 0;
 
       $ionicHistory.nextViewOptions({
         disableBack: true

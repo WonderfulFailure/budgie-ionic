@@ -1,7 +1,7 @@
 <ion-view view-title="">
   <ion-content scroll="false" drag-content="false">
-    <h2 class="text-center">{{ daily.today | date : 'EEEE, MMMM d' }}</h2>
-    <div class="radial">
+    <h2 class="text-center" ng-class="{ 'slide-up': daily.toggleFlip, 'slide-back-down': daily.toggleClose == 'yes' }">{{ daily.today | date : 'EEEE, MMMM d' }}</h2>
+    <div class="radial" ng-class="{ 'shrink': daily.toggleFlip, 'unshrink': daily.toggleClose == 'yes' }">
         <progress-arc
             size="200"
             stroke="#3bd3dd"
@@ -29,14 +29,14 @@
             counter-clockwise="false">
         </progress-arc>
 
-        <label class="current" ng-show="daily.todaysBudget">${{ daily.todaysBudget / 100 | number:2 }}</label>
+        <label class="current" ng-show="daily.todaysBudget || daily.todaysBudget == 0" ng-init="daily.toggleBounce = false" ng-class="{ 'skew-bounce': daily.toggleBounce }">${{ daily.todaysBudget / 100 | number:2 }}</label>
         <label class="daily" ng-show="daily.dailyBudget">/ ${{ daily.dailyBudget / 100 | number:2 }}</label>
     </div>
     <div class="flip-container" ng-class="{ 'flip': daily.toggleFlip }" ng-init="daily.toggleFlip = false;">
         <div class="flipper">
             <div class="front">
                 <div class="padding" style="margin-top: 10px;">
-                    <button class="button button-block button-calm button-outline" ng-click="daily.toggleFlip = !daily.toggleFlip; focusMe = true;">Spend</button>
+                    <button class="button button-block button-calm button-outline" ng-click="daily.toggleFlip = !daily.toggleFlip; daily.toggleClose = false; focusMe = true; daily.toggleBounce = false;">Spend</button>
                 </div>
             </div>
             <div class="back">
@@ -44,7 +44,7 @@
                     <div class="list list-inset">
                         <label class="item item-input">
                             <i class="icon ion-social-usd"></i>
-                            <input type="tel" id="spend" placeholder="00.00" ng-blur="daily.toggleFlip = !daily.toggleFlip; spendMoney(spend.amount); spend.amount = ''; focusMe = false;" ng-model="spend.amount" ui-number-mask="2" ui-hide-group-sep focus-me="focusMe" />
+                            <input type="tel" id="spend" placeholder="00.00" ng-blur="daily.toggleFlip = !daily.toggleFlip; daily.toggleClose = 'yes'; spendMoney(spend.amount); spend.amount = ''; focusMe = false;" ng-model="spend.amount" ui-number-mask="2" ui-hide-group-sep focus-me="focusMe" />
                         </label>
                     </div>
                 </form>
@@ -52,7 +52,7 @@
         </div>
     </div>
         <div class="padding">
-    <a class="button button-block button-energized button-outline" href="#/app/goals">Goals</a>
+    <a class="button button-block button-energized button-outline" href="#/app/goals" ng-click="daily.toggleClose = false;">Goals</a>
 </div>
   </ion-content>
 </ion-view>
