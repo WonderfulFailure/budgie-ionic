@@ -453,6 +453,8 @@ angular.module('budgie.controllers', ['budgie.config'])
     $ionicHistory.nextViewOptions({
       disableBack: true
     });
+    $scope.showLogin();
+    $rootScope.sideMenuVisible = true;
     $state.go('app.daily', {  }, { reload: true, inherit: false, notify: true });
   }
 
