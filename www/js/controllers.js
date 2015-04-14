@@ -203,7 +203,7 @@ angular.module('budgie.controllers', ['budgie.config'])
   }
 
   $scope.$watch(function () { return User.getUserObj() }, function (newVal, oldVal) {
-    if(typeof newVal !== 'undefined' && typeof oldVal !== 'undefined' && newVal.todaysBudget && newVal.todaysBudget != oldVal.todaysBudget) {
+    if((typeof newVal !== 'undefined' && typeof oldVal !== 'undefined' && newVal && oldVal && newVal.todaysBudget && oldVal.todaysBudget && newVal.todaysBudget != oldVal.todaysBudget) || (typeof newVal !== 'undefined' && newVal && (!oldVal || typeof oldVal === 'undefined'))) {
       $scope.getDaily();
     }
   }, true);
@@ -307,6 +307,7 @@ angular.module('budgie.controllers', ['budgie.config'])
         }
       });
 
+      $scope.goal.originalTodaysBudget = $scope.goal.originalTodaysBudget - $scope.goal.amount;
       $scope.goal.amount = 0;
 
       $ionicHistory.nextViewOptions({
@@ -390,7 +391,6 @@ angular.module('budgie.controllers', ['budgie.config'])
 
   $scope.$on( "$ionicView.beforeEnter", function( scopes, states ) {
       User.currentUser().then(function(result) {
-        console.log(result.todaysBudget);
         if(result.todaysBudget == 0) {
           $scope.goal.showTomorrowMessage = true;
         }
@@ -454,6 +454,7 @@ angular.module('budgie.controllers', ['budgie.config'])
     User.signup($scope.signUpData)
     .success(function(result) {
       User.update({ 'bucketName': $scope.welcome.bucketTitle, 'bucketGoal': $scope.welcome.bucketGoal });
+      $rootScope.sideMenuVisible = true;
       $localStorage.completedWelcomeProcess = true;
       $ionicHistory.nextViewOptions({
         disableBack: true

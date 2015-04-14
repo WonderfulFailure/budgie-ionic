@@ -203,6 +203,10 @@ angular.module('budgie.services', ['ngStorage', 'budgie.config'])
     return currentUser;
   }
 
+  User.getUserBucketsObj = function() {
+    return userBuckets;
+  }
+
   User.fetchBucketsFromParse = function(sessionToken) {
     var deferred = $q.defer();
     var promise = deferred.promise;
@@ -396,6 +400,7 @@ angular.module('budgie.services', ['ngStorage', 'budgie.config'])
   }
 
   IntercomService.shutdown = function() {
+    hasAuthed = false;
     return Intercom('shutdown');
   }
 
