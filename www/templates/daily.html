@@ -4,7 +4,7 @@
     <div class="radial" ng-class="{ 'shrink': daily.toggleFlip, 'unshrink': daily.toggleClose == 'yes' }">
         <progress-arc
             size="200"
-            stroke="#3bd3dd"
+            stroke="{{ daily.dailyComplete < 0 ? '#dd9b3b' : '#3bd3dd' }}"
             stroke-width="20"
             complete="daily.dailyComplete || 0"
             counter-clockwise="false"
@@ -36,7 +36,7 @@
         <div class="flipper">
             <div class="front">
                 <div class="padding" style="margin-top: 10px;">
-                    <button class="button button-block button-calm button-outline" ng-click="daily.toggleFlip = !daily.toggleFlip; daily.toggleClose = false; focusMe = true; daily.toggleBounce = false;">Spend</button>
+                    <button class="button button-block button-calm button-outline" ng-click="daily.toggleFlip = !daily.toggleFlip; daily.toggleClose = false; focusMe = true; daily.toggleBounce = false; daily.hideGoalsButton = true;">Spend</button>
                 </div>
             </div>
             <div class="back">
@@ -44,14 +44,14 @@
                     <div class="list list-inset">
                         <label class="item item-input">
                             <i class="icon ion-social-usd"></i>
-                            <input type="tel" id="spend" placeholder="00.00" ng-blur="focusMe = false; daily.toggleFlip = !daily.toggleFlip; daily.toggleClose = 'yes'; spendMoney(spend.amount); spend.amount = '';" ng-model="spend.amount" ui-number-mask="2" ui-hide-group-sep focus-me="focusMe" />
+                            <input type="tel" id="spend" placeholder="00.00" ng-blur="focusMe = false; daily.toggleFlip = !daily.toggleFlip; daily.toggleClose = 'yes'; spendMoney(spend.amount); spend.amount = ''; daily.hideGoalsButton = false;" ng-model="spend.amount" ui-number-mask="2" ui-hide-group-sep focus-me="focusMe" />
                         </label>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-        <div class="padding">
+        <div class="padding" ng-show="!daily.hideGoalsButton">
     <a class="button button-block button-energized button-outline" href="#/app/goals" ng-click="daily.toggleClose = false;">Goals</a>
 </div>
   </ion-content>

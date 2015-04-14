@@ -135,6 +135,7 @@ angular.module('budgie.controllers', ['budgie.config'])
       }
       else {
         $scope.daily.dailyComplete = $scope.daily.todaysBudget / $scope.daily.dailyBudget;
+        if($scope.daily.dailyComplete < -1) $scope.daily.dailyComplete = -1;
         $scope.daily.rolloverComplete = 0.0;
         $scope.daily.secondaryRolloverComplete = 0.0;
       }
@@ -282,6 +283,7 @@ angular.module('budgie.controllers', ['budgie.config'])
     }
     else {
       $scope.goal.dailyComplete = $scope.goal.todaysBudget / $scope.goal.dailyBudget;
+      if($scope.goal.dailyComplete < -1) $scope.goal.dailyComplete = -1;
       $scope.goal.rolloverComplete = 0.0;
     }
 
@@ -473,13 +475,13 @@ angular.module('budgie.controllers', ['budgie.config'])
   });
 
   User.getUserBuckets().then(function(buckets) {
-    $scope.settings.bucketGoal = buckets.goal;
+    $scope.settings.bucketGoal = buckets.goal / 100;
     $scope.settings.bucketName = buckets.title;
   });
 
   $scope.updateSettings = function() {
     User.update({ 'monthlyBudget': $scope.settings.monthlyBudget * 100 });
-    User.updateBuckets({ 'bucketGoal': $scope.settings.bucketGoal, 'bucketName': $scope.settings.bucketName });
+    User.updateBuckets({ 'bucketGoal': $scope.settings.bucketGoal * 100, 'bucketName': $scope.settings.bucketName });
     $ionicHistory.nextViewOptions({
       disableBack: true
     });

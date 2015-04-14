@@ -5,7 +5,7 @@
             <div class="radial small noanim nodelay">
                 <progress-arc
                     size="125"
-                    stroke="#3bd3dd"
+                    stroke="{{ goal.dailyComplete < 0 ? '#dd9b3b' : '#3bd3dd' }}"
                     stroke-width="15"
                     complete="goal.dailyComplete || 0"
                     counter-clockwise="false"
@@ -30,7 +30,7 @@
                     counter-clockwise="false">
                 </progress-arc>
 
-                <label class="current" ng-show="goal.todaysBudget >= 0">${{ goal.todaysBudget / 100 | number:2 }}</label>
+                <label class="current" ng-show="goal.todaysBudget || goal.todaysBudget == 0">${{ goal.todaysBudget / 100 | number:2 }}</label>
             </div>
 
             <div class="radial small noanim nodelay" ng-click="changeBucketGoal()">
@@ -58,12 +58,12 @@
                     </div>
             </div>
         </div>
-        <div class="row">
+        <div class="row" ng-show="goal.dailyComplete > 0">
             <div class="col">
                 <div class="contribution text-center">${{ goal.amount / 100 | number: 2 }}</div>
             </div>
         </div>
-        <form ng-submit="processForm()">
+        <form ng-submit="processForm()" ng-show="goal.dailyComplete > 0">
             <div class="row">
                 <div class="col text-center">
                     <input type="range" style="border:none;-webkit-box-shadow:none;width:80%;margin:0 auto;" class="form-control" min="0" max="{{ goal.maxBucketContribution }}" step="1" ng-change="updateSlider($event)" ng-model="goal.amount">
@@ -73,5 +73,10 @@
                 <input type="submit" class="button button-energized button-block button-outline" value="Save" />
             </div>
         </form>
+        <div class="row" ng-show="goal.dailyComplete < 0">
+            <div class="padding text-center">
+                Bwraaak!  In just <strong>{{ goal.todaysBudget * -1 / goal.dailyBudget | number:2 }}</strong> days you can start saving!  Time to tip the scales!
+            </div>
+        </div>
     </ion-content>
 </ion-view>
