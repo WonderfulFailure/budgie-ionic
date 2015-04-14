@@ -197,6 +197,8 @@ angular.module('budgie.controllers', ['budgie.config'])
       // Add the transaction to parse
       Transactions.addTransaction(user, amount);
 
+      Intercom.trackEvent('spent-money');
+
     }, function(error) {
       $scope.showLogin();
     });
