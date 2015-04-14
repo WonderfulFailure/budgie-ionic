@@ -387,6 +387,18 @@ angular.module('budgie.controllers', ['budgie.config'])
       }
     });
   }
+
+  $scope.$on( "$ionicView.beforeEnter", function( scopes, states ) {
+      User.currentUser().then(function(result) {
+        console.log(result.todaysBudget);
+        if(result.todaysBudget == 0) {
+          $scope.goal.showTomorrowMessage = true;
+        }
+        else {
+          $scope.goal.showTomorrowMessage = false;
+        }
+      });
+  });
 })
 
 .controller('WelcomeCtrl', function($scope, $rootScope, $http, $state, $stateParams, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicViewSwitcher, User, Intercom) {
