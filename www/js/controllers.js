@@ -215,6 +215,11 @@ angular.module('budgie.controllers', ['budgie.config'])
     $scope.getDaily();
   });
 
+  // Animation cleanup
+  $scope.$on('$ionicView.afterLeave', function(scope, states) {
+    $scope.daily.toggleBounce = false;
+  });
+
   $scope.getDaily();
 })
 

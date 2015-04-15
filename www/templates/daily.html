@@ -29,8 +29,8 @@
             counter-clockwise="false">
         </progress-arc>
 
-        <label class="current" ng-show="daily.todaysBudget || daily.todaysBudget == 0" ng-init="daily.toggleBounce = false" ng-class="{ 'skew-bounce': daily.toggleBounce }">${{ daily.todaysBudget / 100 | number:2 }}</label>
-        <label class="daily" ng-show="daily.dailyBudget">/ ${{ daily.dailyBudget / 100 | number:2 }}</label>
+        <label class="current ng-hide" ng-show="daily.todaysBudget && (daily.todaysBudget / 100 | number:2)" ng-init="daily.toggleBounce = false" ng-class="{ 'skew-bounce': daily.toggleBounce }">{{ '$' + (daily.todaysBudget / 100 | number:2) }}</label>
+        <label class="daily ng-hide" ng-show="daily.dailyBudget && (daily.dailyBudget / 100 | number:2)">/ ${{ daily.dailyBudget / 100 | number:2 }}</label>
     </div>
     <div class="flip-container" ng-class="{ 'flip': daily.toggleFlip }" ng-init="daily.toggleFlip = false;">
         <div class="flipper">
