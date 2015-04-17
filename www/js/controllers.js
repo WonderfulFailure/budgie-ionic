@@ -113,7 +113,6 @@ angular.module('budgie.controllers', ['budgie.config'])
 
   $scope.getDaily = function() {
     User.currentUser().then(function(result) {
-      console.log(result);
       Currency.setCurrency(result.currency);
       $scope.daily.currency = Currency.getCurrency();
 
@@ -267,8 +266,8 @@ angular.module('budgie.controllers', ['budgie.config'])
       $scope.goal.rolloverComplete = 0.0;
     }
 
-    $scope.goal.bucketProgress = $scope.goal.originalBucketProgress + parseInt($scope.goal.amount);
-    $scope.goal.goalComplete = $scope.goal.bucketProgress / $scope.goal.bucketGoal;
+    $scope.goal.bucketProgress = $scope.goal.originalBucketProgress + parseFloat($scope.goal.amount);
+    $scope.goal.goalComplete = parseFloat($scope.goal.bucketProgress / $scope.goal.bucketGoal);
     $scope.goal.bucketProgressDisplay = Currency.toDisplay($scope.goal.bucketProgress);
   }
 
@@ -347,13 +346,14 @@ angular.module('budgie.controllers', ['budgie.config'])
     var monthlyBudget;
 
     if($scope.welcome.customBudgetAmount)
-      monthlyBudget = $scope.welcome.customBudgetAmount * 100;
+      monthlyBudget = Currency.toStorageFormat($scope.welcome.customBudgetAmount);
     else
       monthlyBudget = $scope.welcome.spendingHabits;
     $state.go('app.welcome.goals', { monthlyBudget: monthlyBudget, selectedCurrency: $scope.welcome.selectedCurrency });
   }
 
   $scope.processGoalForm = function() {
+    $scope.welcome.bucketGoal = $scope.welcome.bucketGoal;
     $state.go('app.welcome.signup', { monthlyBudget: $scope.welcome.monthlyBudget, bucketGoal: $scope.welcome.bucketGoal, bucketTitle: $scope.welcome.bucketTitle, selectedCurrency: $scope.welcome.selectedCurrency });
   }
 
@@ -362,7 +362,7 @@ angular.module('budgie.controllers', ['budgie.config'])
     $scope.welcome.monthlyBudget = parseInt($scope.welcome.monthlyBudget);
     $scope.welcome.dailyBudget = parseInt($scope.welcome.monthlyBudget / 30);
     $scope.welcome.todaysBudget = parseInt($scope.welcome.monthlyBudget / 30);
-    $scope.welcome.bucketGoal = String(parseInt($scope.welcome.bucketGoal * 100));
+    $scope.welcome.bucketGoal = String(parseInt(Currency.toStorageFormat($scope.welcome.bucketGoal)));
 
     $scope.signUpData = {
       'email': $scope.welcome.email,

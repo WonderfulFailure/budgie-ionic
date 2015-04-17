@@ -445,10 +445,10 @@ angular.module('budgie.services', ['ngStorage', 'budgie.config'])
       'character': '¥',
       'placeholder': '00.00',
       'decimalPlaces': 2,
-      'centsToWhole': 1,
+      'centsToWhole': 100,
       'icon': 'fa-yen',
       'format': 'left',
-      'sliderUnit': 0.1
+      'sliderUnit': 1
     }
   ];
 

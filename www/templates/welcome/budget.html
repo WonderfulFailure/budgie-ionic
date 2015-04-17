@@ -38,6 +38,9 @@
         </label>
       </div>
     </div>
+    <div class="padding" ng-show="welcome.monthlyToDailyDisplay">
+      This means you'll have <strong>{{ welcome.monthlyToDailyDisplay }}</strong> per day.
+    </div>
     <div class="padding">
       <input type="submit" class="button button-calm button-block button-outline" ng-click="processSetupForm(welcomeForm)" value="Continue Setup"/>
       <input type="submit" class="button button-block button-outline" ng-click="skipWelcome()" value="Already a member?" />
