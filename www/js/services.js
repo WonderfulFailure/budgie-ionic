@@ -290,8 +290,6 @@ angular.module('budgie.services', ['ngStorage', 'budgie.config'])
           userBuckets['title'] = newData[key];
         else
           userBuckets[key] = newData[key];
-
-        console.log(userBuckets);
       }
 
       // Update parse data
@@ -405,4 +403,92 @@ angular.module('budgie.services', ['ngStorage', 'budgie.config'])
   }
 
   return IntercomService;
+}])
+
+.factory('Currency', ['$window', function($window) {
+  var CurrencyService = {};
+  var currentCurrency;
+
+  var currencies = [
+    {
+      'currency': 'usd',
+      'character': '$',
+      'placeholder': '00.00',
+      'decimalPlaces': 2,
+      'centsToWhole': 100,
+      'icon': 'fa-usd',
+      'format': 'left',
+      'sliderUnit': 1
+    },
+    {
+      'currency': 'gbp',
+      'character': '£',
+      'placeholder': '00.00',
+      'decimalPlaces': 2,
+      'centsToWhole': 100,
+      'icon': 'fa-gbp',
+      'format': 'left',
+      'sliderUnit': 1
+    },
+    {
+      'currency': 'euro',
+      'character': '€',
+      'placeholder': '00.00',
+      'decimalPlaces': 2,
+      'centsToWhole': 100,
+      'icon': 'fa-euro',
+      'format': 'left',
+      'sliderUnit': 1
+    },
+    {
+      'currency': 'yen',
+      'character': '¥',
+      'placeholder': '00.00',
+      'decimalPlaces': 2,
+      'centsToWhole': 1,
+      'icon': 'fa-yen',
+      'format': 'left',
+      'sliderUnit': 0.1
+    }
+  ];
+
+  CurrencyService.getCurrencies = function() {
+    return currencies;
+  }
+
+  CurrencyService.setCurrency = function(currency) {
+    currentCurrency = this.getCurrency(currency);
+  }
+
+  CurrencyService.getCurrency = function(key) {
+    if(!key) return currentCurrency;
+    for(var i in currencies) {
+      var currency = currencies[i];
+      if(currency.currency == key) {
+        return currency;
+      }
+    }
+
+    return currencies[0];
+  };
+
+  CurrencyService.toStorageFormat = function(amount, currency) {
+    if(typeof currency === 'undefined') currency = currentCurrency || currencies[0];
+    var multiplier = currency.centsToWhole;
+    return amount * multiplier;
+  }
+
+  CurrencyService.toWhole = function(amountInCents, currency) {
+    if(typeof currency === 'undefined') currency = currentCurrency || currencies[0];
+    var divisor = currency.centsToWhole;
+    return parseFloat(amountInCents / divisor).toFixed(currency.decimalPlaces);
+  }
+
+  CurrencyService.toDisplay = function(amountInCents) {
+    if(currentCurrency) {
+      return currentCurrency.character + CurrencyService.toWhole(amountInCents, currentCurrency);
+    }
+  }
+
+  return CurrencyService;
 }]);

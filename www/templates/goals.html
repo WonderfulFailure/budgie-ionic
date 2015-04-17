@@ -30,7 +30,7 @@
                     counter-clockwise="false">
                 </progress-arc>
 
-                <label class="current" ng-show="goal.todaysBudget || goal.todaysBudget == 0">${{ goal.todaysBudget / 100 | number:2 }}</label>
+                <label class="current" ng-show="goal.todaysBudget || goal.todaysBudget == 0">{{ goal.todaysBudgetDisplay }}</label>
             </div>
 
             <div class="radial small noanim nodelay" ng-click="changeBucketGoal()">
@@ -43,7 +43,7 @@
                     background="#eee">
                 </progress-arc>
 
-                <label class="current" ng-show="goal.bucketProgress || goal.bucketProgress == 0">${{ goal.bucketProgress / 100 | number:2 }}</label>
+                <label class="current" ng-show="goal.bucketProgress || goal.bucketProgress == 0">{{ goal.bucketProgressDisplay }}</label>
             </div>
         </div>
         <div class="bucket-labels">
@@ -60,13 +60,13 @@
         </div>
         <div class="row" ng-show="goal.todaysBudget >= 0 && !goal.showTomorrowMessage">
             <div class="col">
-                <div class="contribution text-center">${{ goal.amount / 100 | number: 2 }}</div>
+                <div class="contribution text-center">{{ goal.amountDisplay }}</div>
             </div>
         </div>
         <form ng-submit="processForm()" ng-show="goal.todaysBudget >= 0 && !goal.showTomorrowMessage">
             <div class="row">
                 <div class="col text-center">
-                    <input type="range" style="border:none;-webkit-box-shadow:none;width:80%;margin:0 auto;" class="form-control" min="0" max="{{ goal.maxBucketContribution }}" step="1" ng-change="updateSlider($event)" ng-model="goal.amount">
+                    <input type="range" style="border:none;-webkit-box-shadow:none;width:80%;margin:0 auto;" class="form-control" min="0" max="{{ goal.maxBucketContribution }}" step="{{ goal.currency.sliderUnit }}" ng-change="updateSlider($event)" ng-model="goal.amount">
                 </div>
             </div>
             <div class="padding">

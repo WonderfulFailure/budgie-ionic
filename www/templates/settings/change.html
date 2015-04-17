@@ -4,21 +4,21 @@
         <div class="list list-inset">
             <label>Monthly Budget</label>
             <label class="item item-input">
-                <i class="icon ion-social-usd"></i>
-                <input type="tel" placeholder="00.00" ng-model="settings.monthlyBudget" ui-number-mask="2" ui-hide-group-sep />
+                <i class="fa {{ settings.currency.icon }}"></i>
+                <input type="tel" placeholder="00.00" ng-model="settings.monthlyBudget" ui-number-mask="settings.currency.decimalPlaces" ui-hide-group-sep />
             </label>
         </div>
         <div class="list list-inset">
             <label>Savings Goal</label>
             <label class="item item-input item-stacked-label">
-                <input type="text" placeholder="john@suhr.com" ng-model="settings.bucketName">
+                <input type="text" placeholder="Taylor Swift concert tickets" ng-model="settings.bucketName">
             </label>
         </div>
         <div class="list list-inset">
             <label>Amount Needed</label>
             <label class="item item-input">
-                <i class="icon ion-social-usd"></i>
-                <input type="tel" placeholder="00.00" ng-model="settings.bucketGoal" ui-number-mask="2" ui-hide-group-sep />
+                <i class="fa {{ settings.currency.icon }}"></i>
+                <input type="tel" placeholder="00.00" ng-model="settings.bucketGoal" ui-number-mask="settings.currency.decimalPlaces" ui-hide-group-sep />
             </label>
         </div>
         <div class="padding">

@@ -1,10 +1,13 @@
 angular.module('budgie.controllers', ['budgie.config'])
 
-.controller('AppCtrl', function($scope, $rootScope, $ionicModal, $ionicPopup, $ionicHistory, $ionicLoading, $ionicScrollDelegate, $state, $http, $localStorage, User, Intercom) {
+.controller('AppCtrl', function($scope, $rootScope, $ionicModal, $ionicPopup, $ionicHistory, $ionicLoading, $ionicScrollDelegate, $state, $http, $localStorage, User, Intercom, Currency) {
 
   $ionicScrollDelegate.freezeScroll( true );
 
   $rootScope.sideMenuVisible = true;
+
+  // Currency
+  Currency.setCurrency('usd');
 
   // Update Intercom status upon every view change, if the user
   // is logged in
@@ -88,9 +91,10 @@ angular.module('budgie.controllers', ['budgie.config'])
   }
 })
 
-.controller('DailyCtrl', function($scope, $rootScope, $http, $state, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicPopup, $ionicLoading, User, Transactions, Intercom) {
+.controller('DailyCtrl', function($scope, $rootScope, $http, $state, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicPopup, $ionicLoading, User, Transactions, Intercom, Currency) {
 
   $scope.daily = { 'today': new Date(), 'toggleBounce': false };
+  $scope.daily.currency = Currency.getCurrency();
   $scope.user = {};
 
   $rootScope.sideMenuVisible = true;
@@ -109,12 +113,18 @@ angular.module('budgie.controllers', ['budgie.config'])
 
   $scope.getDaily = function() {
     User.currentUser().then(function(result) {
+      console.log(result);
+      Currency.setCurrency(result.currency);
+      $scope.daily.currency = Currency.getCurrency();
+
       User.fetchBucketsFromParse(result.sessionToken);
 
       $scope.user = result;
 
       $scope.daily.todaysBudget = result.todaysBudget;
       $scope.daily.dailyBudget = result.dailyBudget;
+      $scope.daily.todaysBudgetDisplay = Currency.toDisplay(result.todaysBudget);
+      $scope.daily.dailyBudgetDisplay = Currency.toDisplay(result.dailyBudget);
 
       $scope.daily.toggleBounce = false;
       $scope.daily.toggleBounce = true;
@@ -145,50 +155,12 @@ angular.module('budgie.controllers', ['budgie.config'])
     });
   }
 
-  $scope.changeMonthlyBudget = function() {
-    $scope.daily.mB = parseFloat($scope.user.monthlyBudget / 100).toFixed(2);
-    $ionicPopup.show({
-      template: '<label class="item item-input"><i class="icon ion-social-usd"></i><input type="tel" placeholder="00.00" ng-model="daily.mB" ui-number-mask="2" ui-hide-group-sep /></label>',
-      title: 'Enter your monthly budget',
-      subTitle: 'Just dollars, please.',
-      scope: $scope,
-      buttons: [
-        { text: 'Cancel' },
-        {
-          text: '<b>Save</b>',
-          type: 'button-calm',
-          onTap: function(e) {
-            if (!$scope.daily.mB) {
-              //don't allow the user to close unless he enters wifi password
-              e.preventDefault();
-            } else {
-              return $scope.daily.mB;
-            }
-          }
-        }
-      ]
-    })
-    .then(function(newMonthlyBudget) {
-      if(newMonthlyBudget) {
-        $scope.user.monthlyBudget = newMonthlyBudget * 100;
-        User.update($scope.user);
-
-        $ionicPopup.alert({
-          title: 'New money, suit and tie',
-          template: 'Starting tomorrow, you\'ll get <strong>$' + parseFloat(newMonthlyBudget / 30).toFixed(2) + '</strong> per day.',
-          buttons: [{ text: 'Got it', type: 'button-calm' }]
-        });
-
-        Intercom.trackEvent('changed-settings', {'setting': 'Monthly Budget'});
-      }
-    });
-  }
-
   $scope.spendMoney = function(amount) {
     if(amount === undefined || amount == 0 || amount == '0.00') return false;
 
     User.currentUser().then(function(user) {
-      var amountInCents = amount * 100;
+      var amountInCents = Currency.toStorageFormat(amount);
+      console.log(amountInCents);
       var newBalance = user.todaysBudget - amountInCents;
 
       // Update just local data
@@ -196,6 +168,8 @@ angular.module('budgie.controllers', ['budgie.config'])
 
       // Add the transaction to parse
       Transactions.addTransaction(user, amount);
+
+      $scope.getDaily();
 
       Intercom.trackEvent('spent-money');
 
@@ -223,28 +197,22 @@ angular.module('budgie.controllers', ['budgie.config'])
   $scope.getDaily();
 })
 
-.controller('GoalCtrl', function($scope, $http, $state, $localStorage, $ionicHistory, $ionicPopup, parseConfig, User, Intercom) {
+.controller('GoalCtrl', function($scope, $http, $state, $localStorage, $ionicHistory, $ionicPopup, parseConfig, User, Intercom, Currency) {
   $scope.goal = {
     'amount': 0,
   };
 
-  if(!$localStorage.seenSettingsPopup) {
-    // An alert dialog
-    $ionicPopup.alert({
-      title: 'Did you know that...',
-       template: 'You can change your goal value and title by tapping on them.',
-       buttons: [{ text: 'Now I know!', type: 'button-calm' }]
-     })
-    .then(function() {
-      $localStorage.seenSettingsPopup = true;
-    });
-  }
-
   User.currentUser().then(function(user) {
+
+    Currency.setCurrency(user.currency);
+    $scope.goal.currency = Currency.getCurrency();
 
     $scope.goal.dailyBudget = user.dailyBudget;
     $scope.goal.todaysBudget = user.todaysBudget;
     $scope.goal.originalTodaysBudget = user.todaysBudget;
+
+    $scope.goal.todaysBudgetDisplay = Currency.toDisplay(user.todaysBudget);
+    $scope.goal.amountDisplay = Currency.toDisplay($scope.goal.amount);
 
     $scope.updateSlider();
 
@@ -254,6 +222,8 @@ angular.module('budgie.controllers', ['budgie.config'])
       $scope.goal.originalBucketProgress = data.progress;
       $scope.goal.bucketGoal = data.goal;
       $scope.goal.bucketName = data.title;
+
+      $scope.goal.bucketProgressDisplay = Currency.toDisplay(data.progress);
 
       $scope.goal.goalComplete = $scope.goal.bucketProgress / $scope.goal.bucketGoal;
       if($scope.goal.goalComplete > 1) $scope.goal.goalComplete = 1;
@@ -273,6 +243,9 @@ angular.module('budgie.controllers', ['budgie.config'])
 
   $scope.updateSlider = function() {
     $scope.goal.todaysBudget = $scope.goal.originalTodaysBudget - $scope.goal.amount;
+
+    $scope.goal.todaysBudgetDisplay = Currency.toDisplay($scope.goal.todaysBudget);
+    $scope.goal.amountDisplay = Currency.toDisplay($scope.goal.amount);
 
     if($scope.goal.todaysBudget > $scope.goal.dailyBudget) {
       $scope.goal.dailyComplete = 1.0;
@@ -296,6 +269,7 @@ angular.module('budgie.controllers', ['budgie.config'])
 
     $scope.goal.bucketProgress = $scope.goal.originalBucketProgress + parseInt($scope.goal.amount);
     $scope.goal.goalComplete = $scope.goal.bucketProgress / $scope.goal.bucketGoal;
+    $scope.goal.bucketProgressDisplay = Currency.toDisplay($scope.goal.bucketProgress);
   }
 
   $scope.processForm = function() {
@@ -305,7 +279,7 @@ angular.module('budgie.controllers', ['budgie.config'])
       $http({
         method  : 'POST',
         url     : 'https://api.parse.com/1/functions/AddBucketContribution',
-        data    : 'amount=' + $scope.goal.amount / 100,
+        data    : 'amount=' + Currency.toWhole($scope.goal.amount),
         headers : {
           'X-Parse-Application-Id': parseConfig.appid,
           'X-Parse-REST-API-Key': parseConfig.rest_key,
@@ -324,78 +298,6 @@ angular.module('budgie.controllers', ['budgie.config'])
     });
   }
 
-  $scope.changeBucketName = function() {
-    var oldBucketName = $scope.goal.bucketName;
-    $ionicPopup.show({
-      template: '<label class="item item-input"><input type="text" ng-model="goal.bucketName"></label>',
-      title: 'Enter new Goal Name',
-      subTitle: 'Just text, please.',
-      scope: $scope,
-      buttons: [
-        { text: 'Cancel' },
-        {
-          text: '<b>Save</b>',
-          type: 'button-calm',
-          onTap: function(e) {
-            if (!$scope.goal.bucketName) {
-              e.preventDefault();
-            } else {
-              return $scope.goal.bucketName;
-            }
-          }
-        }
-      ]
-    })
-    .then(function(bucketName) {
-      if(bucketName) {
-        User.update({ 'bucketName': bucketName });
-        Intercom.trackEvent('changed-settings', {'setting': 'Goal Title', 'Goal Title': bucketName});
-      }
-      else {
-        $scope.goal.bucketName = oldBucketName;
-      }
-    });
-  }
-
-  $scope.changeBucketGoal = function() {
-    $scope.goal.oldGoal = $scope.goal.bucketGoal;
-    $scope.goal.bucketGoal = $scope.goal.bucketGoal / 100;
-    $ionicPopup.show({
-      template: '<label class="item item-input"><i class="icon ion-social-usd"></i><input type="tel" placeholder="00.00" ng-model="goal.bucketGoal" ui-number-mask="2" ui-hide-group-sep /></label>',
-      title: 'Enter new Goal',
-      subTitle: 'Just dollars, please.',
-      scope: $scope,
-      buttons: [
-        { text: 'Cancel' },
-        {
-          text: '<b>Save</b>',
-          type: 'button-calm',
-          onTap: function(e) {
-            if (!$scope.goal.bucketGoal) {
-              e.preventDefault();
-            } else {
-              return $scope.goal.bucketGoal;
-            }
-          }
-        }
-      ]
-    })
-    .then(function(newBucketGoal) {
-      if(newBucketGoal) {
-        $scope.goal.bucketGoal = newBucketGoal * 100;
-        $scope.goal.maxBucketContribution = $scope.goal.bucketGoal - $scope.goal.bucketProgress;
-
-        if($scope.goal.amount > $scope.goal.maxBucketContribution) $scope.goal.amount = $scope.goal.maxBucketContribution;
-
-        Intercom.trackEvent('changed-settings', {'setting': 'Goal Amount'});
-        User.update({ 'bucketGoal': $scope.goal.bucketGoal });
-      }
-      else {
-        $scope.goal.bucketGoal = $scope.goal.oldGoal;
-      }
-    });
-  }
-
   $scope.$on( "$ionicView.beforeEnter", function( scopes, states ) {
       User.currentUser().then(function(result) {
         if(result.todaysBudget == 0) {
@@ -408,16 +310,29 @@ angular.module('budgie.controllers', ['budgie.config'])
   });
 })
 
-.controller('WelcomeCtrl', function($scope, $rootScope, $http, $state, $stateParams, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicViewSwitcher, User, Intercom) {
+.controller('WelcomeCtrl', function($scope, $rootScope, $http, $state, $stateParams, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicViewSwitcher, User, Intercom, Currency) {
 
   $rootScope.sideMenuVisible = false;
   $ionicSideMenuDelegate.canDragContent(false);
 
   $scope.welcome = {};
 
+  if($stateParams.selectedCurrency) {
+    $scope.welcome.currency = Currency.getCurrency($stateParams.selectedCurrency);
+    $scope.welcome.selectedCurrency = $scope.welcome.currency.currency;
+  }
+  else {
+    $scope.welcome.currency = Currency.getCurrency();
+    $scope.welcome.selectedCurrency = $scope.welcome.currency.currency;
+  }
+
   $scope.welcome.frugal = '25000';
   $scope.welcome.moderate = '40000';
   $scope.welcome.lavish = '50000';
+
+  $scope.welcome.frugalFormatted = Currency.toDisplay($scope.welcome.frugal);
+  $scope.welcome.moderateFormatted = Currency.toDisplay($scope.welcome.moderate);
+  $scope.welcome.lavishFormatted = Currency.toDisplay($scope.welcome.lavish);
 
   if($stateParams.monthlyBudget)
     $scope.welcome.monthlyBudget = $stateParams.monthlyBudget;
@@ -435,11 +350,11 @@ angular.module('budgie.controllers', ['budgie.config'])
       monthlyBudget = $scope.welcome.customBudgetAmount * 100;
     else
       monthlyBudget = $scope.welcome.spendingHabits;
-    $state.go('app.welcome.goals', { monthlyBudget: monthlyBudget });
+    $state.go('app.welcome.goals', { monthlyBudget: monthlyBudget, selectedCurrency: $scope.welcome.selectedCurrency });
   }
 
   $scope.processGoalForm = function() {
-    $state.go('app.welcome.signup', { monthlyBudget: $scope.welcome.monthlyBudget, bucketGoal: $scope.welcome.bucketGoal, bucketTitle: $scope.welcome.bucketTitle });
+    $state.go('app.welcome.signup', { monthlyBudget: $scope.welcome.monthlyBudget, bucketGoal: $scope.welcome.bucketGoal, bucketTitle: $scope.welcome.bucketTitle, selectedCurrency: $scope.welcome.selectedCurrency });
   }
 
   $scope.processSignupForm = function() {
@@ -455,12 +370,14 @@ angular.module('budgie.controllers', ['budgie.config'])
       'password': $scope.welcome.password,
       'monthlyBudget': $scope.welcome.monthlyBudget,
       'dailyBudget': $scope.welcome.dailyBudget,
-      'todaysBudget': $scope.welcome.todaysBudget
+      'todaysBudget': $scope.welcome.todaysBudget,
+      'currency': $scope.welcome.selectedCurrency
     }
 
     User.signup($scope.signUpData)
     .success(function(result) {
       User.update({ 'bucketName': $scope.welcome.bucketTitle, 'bucketGoal': $scope.welcome.bucketGoal });
+      Currency.setCurrency($scope.welcome.selectedCurrency);
       $rootScope.sideMenuVisible = true;
       $localStorage.completedWelcomeProcess = true;
       $ionicHistory.nextViewOptions({
@@ -480,9 +397,17 @@ angular.module('budgie.controllers', ['budgie.config'])
     $state.go('app.daily', {  }, { reload: true, inherit: false, notify: true });
   }
 
+  $scope.changeCurrency = function(newCurrency) {
+    Currency.setCurrency(newCurrency);
+    $scope.welcome.currency = Currency.getCurrency();
+    $scope.welcome.frugalFormatted = Currency.toDisplay($scope.welcome.frugal);
+    $scope.welcome.moderateFormatted = Currency.toDisplay($scope.welcome.moderate);
+    $scope.welcome.lavishFormatted = Currency.toDisplay($scope.welcome.lavish);
+  }
+
 })
 
-.controller('SettingsCtrl', function($scope, $rootScope, $http, $state, $stateParams, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicViewSwitcher, User, Intercom) {
+.controller('SettingsCtrl', function($scope, $rootScope, $http, $state, $stateParams, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicViewSwitcher, User, Intercom, Currency) {
 
   $scope.settings = {
     'monthlyBudget': '',
@@ -491,17 +416,20 @@ angular.module('budgie.controllers', ['budgie.config'])
   };
 
   User.currentUser().then(function(user) {
-    $scope.settings.monthlyBudget = user.monthlyBudget / 100;
+    Currency.setCurrency(user.currency);
+    $scope.settings.currency = Currency.getCurrency();
+
+    $scope.settings.monthlyBudget = Currency.toWhole(user.monthlyBudget);
   });
 
   User.getUserBuckets().then(function(buckets) {
-    $scope.settings.bucketGoal = buckets.goal / 100;
+    $scope.settings.bucketGoal = Currency.toWhole(buckets.goal);
     $scope.settings.bucketName = buckets.title;
   });
 
   $scope.updateSettings = function() {
-    User.update({ 'monthlyBudget': $scope.settings.monthlyBudget * 100 });
-    User.updateBuckets({ 'bucketGoal': $scope.settings.bucketGoal * 100, 'bucketName': $scope.settings.bucketName });
+    User.update({ 'monthlyBudget': Currency.toStorageFormat($scope.settings.monthlyBudget), 'dailyBudget': Currency.toStorageFormat($scope.settings.monthlyBudget) / 30 });
+    User.updateBuckets({ 'bucketGoal': Currency.toStorageFormat($scope.settings.bucketGoal), 'bucketName': $scope.settings.bucketName });
     $ionicHistory.nextViewOptions({
       disableBack: true
     });

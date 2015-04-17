@@ -16,8 +16,8 @@
     </div>
     <div class="padding-horizontal">
         <label class="item item-input">
-            <i class="icon ion-social-usd"></i>
-            <input type="tel" id="spend" placeholder="00.00" ng-model="welcome.bucketGoal" ui-number-mask="2" ui-hide-group-sep />
+            <i class="fa {{ welcome.currency.icon }}"></i>
+            <input type="tel" id="spend" placeholder="{{ welcome.currency.placeholder }}" ng-model="welcome.bucketGoal" ui-number-mask="welcome.currency.decimalPlaces" ui-hide-group-sep />
         </label>
     </div>
     <div class="padding"></div>

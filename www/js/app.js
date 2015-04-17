@@ -77,7 +77,7 @@ angular.module('budgie', ['ionic', 'angular-progress-arc', 'ui.utils.masks', 'bu
   })
 
   .state('app.welcome.goals', {
-    url: "/goals/:monthlyBudget",
+    url: "/goals/:monthlyBudget/:selectedCurrency",
     views: {
       'welcomeContent': {
         templateUrl: "templates/welcome/goals.html",
@@ -87,7 +87,7 @@ angular.module('budgie', ['ionic', 'angular-progress-arc', 'ui.utils.masks', 'bu
   })
 
   .state('app.welcome.signup', {
-    url: "/signup/:monthlyBudget/:bucketGoal/:bucketTitle",
+    url: "/signup/:monthlyBudget/:selectedCurrency/:bucketGoal/:bucketTitle",
     views: {
       'welcomeContent': {
         templateUrl: "templates/welcome/signup.html",

@@ -1,17 +1,28 @@
 <ion-view view-title="Welcome to Budgie">
-  <ion-content scroll="false" drag-content="false">
+  <ion-content>
     <div class="padding">
       <p>Budgie lets you know how much money you can spend each day. Anything left unspent carries over to the next day! Bwraaaak!</p>
     </div>
-    <div class="padding">
+    <div class="padding-left padding-right">
+      <p>What does your currency look like?</p>
+    </div>
+    <div class="row">
+      <div class="button-bar">
+        <a class="button button-calm button-outline" ng-class="{ 'active': welcome.selectedCurrency == 'usd' }" ng-click="welcome.selectedCurrency = 'usd'; changeCurrency('usd');"><i class="fa fa-usd"></i></a>
+        <a class="button button-calm button-outline" ng-class="{ 'active': welcome.selectedCurrency == 'gbp' }" ng-click="welcome.selectedCurrency = 'gbp'; changeCurrency('gbp');"><i class="fa fa-gbp"></i></a>
+        <a class="button button-calm button-outline" ng-class="{ 'active': welcome.selectedCurrency == 'euro' }" ng-click="welcome.selectedCurrency = 'euro'; changeCurrency('euro');"><i class="fa fa-euro"></i></a>
+        <a class="button button-calm button-outline" ng-class="{ 'active': welcome.selectedCurrency == 'yen' }" ng-click="welcome.selectedCurrency = 'yen'; changeCurrency('yen');"><i class="fa fa-yen"></i></a>
+      </div>
+    </div>
+    <div class="padding-top padding-left padding-right">
       <p>On average, I want to spend per month...</p>
     </div>
     <form name="welcomeForm">
     <div class="row">
       <div class="button-bar" ng-init="welcome.spendingHabits = welcome.moderate">
-        <a class="button button-calm button-outline" ng-class="{ 'active': welcome.spendingHabits == welcome.frugal }" ng-click="welcome.spendingHabits = welcome.frugal">$250</a>
-        <a class="button button-calm button-outline" ng-class="{ 'active': welcome.spendingHabits == welcome.moderate }" ng-click="welcome.spendingHabits = welcome.moderate">$400</a>
-        <a class="button button-calm button-outline" ng-class="{ 'active': welcome.spendingHabits == welcome.lavish }" ng-click="welcome.spendingHabits = welcome.lavish">$500</a>
+        <a class="button button-calm button-outline" ng-class="{ 'active': welcome.spendingHabits == welcome.frugal }" ng-click="welcome.spendingHabits = welcome.frugal">{{ welcome.frugalFormatted }}</a>
+        <a class="button button-calm button-outline" ng-class="{ 'active': welcome.spendingHabits == welcome.moderate }" ng-click="welcome.spendingHabits = welcome.moderate">{{ welcome.moderateFormatted }}</a>
+        <a class="button button-calm button-outline" ng-class="{ 'active': welcome.spendingHabits == welcome.lavish }" ng-click="welcome.spendingHabits = welcome.lavish">{{ welcome.lavishFormatted }}</a>
       </div>
     </div>
     <div class="padding text-center">
@@ -22,8 +33,8 @@
     <div class="padding">
       <div ng-show="welcome.customToggle">
         <label class="item item-input">
-            <i class="icon ion-social-usd"></i>
-            <input type="tel" id="spend" placeholder="00.00" ng-model="welcome.customBudgetAmount" ui-number-mask="2" ui-hide-group-sep />
+            <i class="fa {{ welcome.currency.icon }}"></i>
+            <input type="tel" id="spend" placeholder="{{ welcome.currency.placeholder }}" ng-model="welcome.customBudgetAmount" ui-number-mask="welcome.currency.decimalPlaces" ui-hide-group-sep />
         </label>
       </div>
     </div>

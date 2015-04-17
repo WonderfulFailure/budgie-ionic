@@ -29,8 +29,8 @@
             counter-clockwise="false">
         </progress-arc>
 
-        <label class="current ng-hide" ng-show="daily.todaysBudget && (daily.todaysBudget / 100 | number:2)" ng-init="daily.toggleBounce = false" ng-class="{ 'skew-bounce': daily.toggleBounce }">{{ '$' + (daily.todaysBudget / 100 | number:2) }}</label>
-        <label class="daily ng-hide" ng-show="daily.dailyBudget && (daily.dailyBudget / 100 | number:2)">/ ${{ daily.dailyBudget / 100 | number:2 }}</label>
+        <label class="current ng-hide" ng-show="daily.todaysBudgetDisplay" ng-init="daily.toggleBounce = false" ng-class="{ 'skew-bounce': daily.toggleBounce }">{{ daily.todaysBudgetDisplay }}</label>
+        <label class="daily ng-hide" ng-show="daily.dailyBudgetDisplay">/ {{ daily.dailyBudgetDisplay }}</label>
     </div>
     <div class="flip-container" ng-class="{ 'flip': daily.toggleFlip }" ng-init="daily.toggleFlip = false;">
         <div class="flipper">
@@ -43,8 +43,8 @@
                 <form ng-submit="spendMoney()">
                     <div class="list list-inset">
                         <label class="item item-input">
-                            <i class="icon ion-social-usd"></i>
-                            <input type="tel" id="spend" placeholder="00.00" ng-blur="focusMe = false; daily.toggleFlip = !daily.toggleFlip; daily.toggleClose = 'yes'; spendMoney(spend.amount); spend.amount = ''; daily.hideGoalsButton = false;" ng-model="spend.amount" ui-number-mask="2" ui-hide-group-sep focus-me="focusMe" />
+                            <i class="fa {{ daily.currency.icon }}"></i>
+                            <input type="tel" id="spend" placeholder="{{ daily.currency.placeholder }}" ng-blur="focusMe = false; daily.toggleFlip = !daily.toggleFlip; daily.toggleClose = 'yes'; spendMoney(spend.amount); spend.amount = ''; daily.hideGoalsButton = false;" ng-model="spend.amount" ui-number-mask="daily.currency.decimalPlaces" ui-hide-group-sep focus-me="focusMe" />
                         </label>
                     </div>
                 </form>

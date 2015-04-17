@@ -7644,7 +7644,8 @@ input[type="tel"] {
     margin: 0 auto;
     display: block;
     width: 125px;
-    font-size: 32px;
+    height: 45px;
+    font-size: 28px;
     text-align: center; }
     .radial label.daily {
       top: 106px;
@@ -8285,7 +8286,6 @@ h2 {
   font-weight: 100; }
 
 .label {
-  font-family: Myriad, "Helvetic Neue", Helvetica, Arial;
   text-anchor: middle;
   font-weight: 100; }
 
