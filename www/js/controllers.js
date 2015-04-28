@@ -116,8 +116,6 @@ angular.module('budgie.controllers', ['budgie.config'])
       Currency.setCurrency(result.currency);
       $scope.daily.currency = Currency.getCurrency();
 
-      User.fetchBucketsFromParse(result.sessionToken);
-
       $scope.user = result;
 
       $scope.daily.todaysBudget = result.todaysBudget;
@@ -159,7 +157,6 @@ angular.module('budgie.controllers', ['budgie.config'])
 
     User.currentUser().then(function(user) {
       var amountInCents = Currency.toStorageFormat(amount);
-      console.log(amountInCents);
       var newBalance = user.todaysBudget - amountInCents;
 
       // Update just local data
@@ -217,20 +214,7 @@ angular.module('budgie.controllers', ['budgie.config'])
 
     User.getUserBuckets()
     .success(function(data) {
-      $scope.goal.bucketProgress = data.progress;
-      $scope.goal.originalBucketProgress = data.progress;
-      $scope.goal.bucketGoal = data.goal;
-      $scope.goal.bucketName = data.title;
-
-      $scope.goal.bucketProgressDisplay = Currency.toDisplay(data.progress);
-
-      $scope.goal.goalComplete = $scope.goal.bucketProgress / $scope.goal.bucketGoal;
-      if($scope.goal.goalComplete > 1) $scope.goal.goalComplete = 1;
-
-      $scope.goal.maxBucketContribution = $scope.goal.bucketGoal - $scope.goal.bucketProgress;
-
-      if($scope.goal.maxBucketContribution > $scope.goal.todaysBudget)
-        $scope.goal.maxBucketContribution = $scope.goal.todaysBudget;
+      $scope.updateSlider();
 
       $scope.$watch(function () { return User.getUserObj() }, function (newVal, oldVal) {
         if(newVal && newVal.todaysBudget && newVal.todaysBudget != oldVal.todaysBudget) {
@@ -241,6 +225,14 @@ angular.module('budgie.controllers', ['budgie.config'])
   });
 
   $scope.updateSlider = function() {
+    $scope.goal.goalComplete = $scope.goal.bucketProgress / $scope.goal.bucketGoal;
+    if($scope.goal.goalComplete > 1) $scope.goal.goalComplete = 1;
+
+    $scope.goal.maxBucketContribution = $scope.goal.bucketGoal - $scope.goal.bucketProgress;
+
+    if($scope.goal.maxBucketContribution > $scope.goal.todaysBudget)
+      $scope.goal.maxBucketContribution = $scope.goal.todaysBudget;
+
     $scope.goal.todaysBudget = $scope.goal.originalTodaysBudget - $scope.goal.amount;
 
     $scope.goal.todaysBudgetDisplay = Currency.toDisplay($scope.goal.todaysBudget);
@@ -305,6 +297,16 @@ angular.module('budgie.controllers', ['budgie.config'])
         else {
           $scope.goal.showTomorrowMessage = false;
         }
+      });
+
+      User.getUserBuckets().success(function(buckets) {
+        $scope.goal.bucketProgress = buckets.progress;
+        $scope.goal.originalBucketProgress = buckets.progress;
+        $scope.goal.bucketGoal = buckets.goal;
+        $scope.goal.bucketName = buckets.title;
+
+        $scope.goal.bucketProgressDisplay = Currency.toDisplay(buckets.progress);
+        $scope.updateSlider();
       });
   });
 })

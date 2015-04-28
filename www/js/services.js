@@ -486,7 +486,12 @@ angular.module('budgie.services', ['ngStorage', 'budgie.config'])
 
   CurrencyService.toDisplay = function(amountInCents) {
     if(currentCurrency) {
-      return currentCurrency.character + CurrencyService.toWhole(amountInCents, currentCurrency);
+      var negativeSymbol = '';
+      if(amountInCents < 0) {
+        negativeSymbol = '-';
+        amountInCents = Math.abs(amountInCents);
+      }
+      return negativeSymbol + currentCurrency.character + CurrencyService.toWhole(amountInCents, currentCurrency);
     }
   }
 
