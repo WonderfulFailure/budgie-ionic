@@ -294,15 +294,6 @@ angular.module('budgie.controllers', ['budgie.config'])
   }
 
   $scope.$on( "$ionicView.beforeEnter", function( scopes, states ) {
-      User.currentUser().then(function(result) {
-        if(result.todaysBudget == 0) {
-          $scope.goal.showTomorrowMessage = true;
-        }
-        else {
-          $scope.goal.showTomorrowMessage = false;
-        }
-      });
-
       User.getUserBuckets().success(function(buckets) {
         $scope.goal.bucketProgress = buckets.progress;
         $scope.goal.originalBucketProgress = buckets.progress;
@@ -362,12 +353,7 @@ angular.module('budgie.controllers', ['budgie.config'])
       monthlyBudget = Currency.toStorageFormat($scope.welcome.customBudgetAmount);
     else
       monthlyBudget = $scope.welcome.spendingHabits;
-    $state.go('app.welcome.goals', { monthlyBudget: monthlyBudget, selectedCurrency: $scope.welcome.selectedCurrency });
-  }
-
-  $scope.processGoalForm = function() {
-    $scope.welcome.bucketGoal = $scope.welcome.bucketGoal;
-    $state.go('app.welcome.signup', { monthlyBudget: $scope.welcome.monthlyBudget, bucketGoal: $scope.welcome.bucketGoal, bucketTitle: $scope.welcome.bucketTitle, selectedCurrency: $scope.welcome.selectedCurrency });
+    $state.go('app.welcome.signup', { monthlyBudget: monthlyBudget, bucketGoal: Currency.toStorageFormat('100'), bucketTitle: 'Piggy Bank', selectedCurrency: $scope.welcome.selectedCurrency });
   }
 
   $scope.processSignupForm = function() {
@@ -375,7 +361,7 @@ angular.module('budgie.controllers', ['budgie.config'])
     $scope.welcome.monthlyBudget = parseInt($scope.welcome.monthlyBudget);
     $scope.welcome.dailyBudget = parseInt($scope.welcome.monthlyBudget / 30);
     $scope.welcome.todaysBudget = parseInt($scope.welcome.monthlyBudget / 30);
-    $scope.welcome.bucketGoal = String(parseInt(Currency.toStorageFormat($scope.welcome.bucketGoal)));
+    $scope.welcome.bucketGoal = String(parseInt($scope.welcome.bucketGoal));
 
     $scope.signUpData = {
       'email': $scope.welcome.email,

@@ -63,7 +63,7 @@
                 <div class="contribution text-center">{{ goal.amountDisplay }}</div>
             </div>
         </div>
-        <form ng-submit="processForm()" ng-show="goal.todaysBudget >= 0 && !goal.showTomorrowMessage">
+        <form ng-submit="processForm()">
             <div class="row">
                 <div class="col text-center">
                     <input type="range" style="border:none;-webkit-box-shadow:none;width:80%;margin:0 auto 30px auto;" class="form-control" min="{{ goal.min }}" max="{{ goal.max }}" step="{{ goal.currency.sliderUnit }}" ng-change="updateSlider($event)" ng-model="goal.amount">
@@ -73,16 +73,5 @@
                 <input type="submit" class="button button-energized button-block button-outline" value="Save" />
             </div>
         </form>
-        <div class="row" ng-show="goal.todaysBudget < 0">
-            <div class="padding text-center">
-                Bwraaak!  In just <strong>{{ goal.todaysBudget * -1 / goal.dailyBudget | number:2 }}</strong> days you can start saving!  Time to tip the scales!
-            </div>
-        </div>
-
-        <div class="row" ng-show="goal.showTomorrowMessage">
-            <div class="padding text-center">
-                Bwraaak!  You'll be able to save more money tomorrow!
-            </div>
-        </div>
     </ion-content>
 </ion-view>
