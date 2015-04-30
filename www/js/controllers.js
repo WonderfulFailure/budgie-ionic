@@ -214,6 +214,12 @@ angular.module('budgie.controllers', ['budgie.config'])
 
     User.getUserBuckets()
     .success(function(data) {
+      $scope.goal.min = -data.progress || 0;
+      $scope.goal.max = data.goal - data.progress;
+
+      if($scope.goal.max > $scope.goal.todaysBudget)
+        $scope.goal.max = $scope.goal.todaysBudget;
+
       $scope.updateSlider();
 
       $scope.$watch(function () { return User.getUserObj() }, function (newVal, oldVal) {
@@ -228,15 +234,12 @@ angular.module('budgie.controllers', ['budgie.config'])
     $scope.goal.goalComplete = $scope.goal.bucketProgress / $scope.goal.bucketGoal;
     if($scope.goal.goalComplete > 1) $scope.goal.goalComplete = 1;
 
-    $scope.goal.maxBucketContribution = $scope.goal.bucketGoal - $scope.goal.bucketProgress;
-
-    if($scope.goal.maxBucketContribution > $scope.goal.todaysBudget)
-      $scope.goal.maxBucketContribution = $scope.goal.todaysBudget;
-
     $scope.goal.todaysBudget = $scope.goal.originalTodaysBudget - $scope.goal.amount;
 
     $scope.goal.todaysBudgetDisplay = Currency.toDisplay($scope.goal.todaysBudget);
     $scope.goal.amountDisplay = Currency.toDisplay($scope.goal.amount);
+
+    //$scope.goal.amountDisplay = Currency.toDisplay($scope.goal.amount);
 
     if($scope.goal.todaysBudget > $scope.goal.dailyBudget) {
       $scope.goal.dailyComplete = 1.0;
@@ -266,6 +269,7 @@ angular.module('budgie.controllers', ['budgie.config'])
   $scope.processForm = function() {
     User.currentUser().then(function(user) {
       User.update({ 'todaysBudget': user.todaysBudget - $scope.goal.amount }, true);
+      User.updateBuckets({ 'progress': $scope.goal.bucketProgress }, true);
       Intercom.trackEvent('saved-money');
       $http({
         method  : 'POST',
@@ -306,6 +310,13 @@ angular.module('budgie.controllers', ['budgie.config'])
         $scope.goal.bucketName = buckets.title;
 
         $scope.goal.bucketProgressDisplay = Currency.toDisplay(buckets.progress);
+
+        $scope.goal.min = -$scope.goal.bucketProgress || 0;
+        $scope.goal.max = $scope.goal.bucketGoal - $scope.goal.bucketProgress;
+
+        if($scope.goal.max > $scope.goal.todaysBudget)
+          $scope.goal.max = $scope.goal.todaysBudget;
+
         $scope.updateSlider();
       });
   });
