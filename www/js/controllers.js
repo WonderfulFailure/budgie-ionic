@@ -174,6 +174,13 @@ angular.module('budgie.controllers', ['budgie.config'])
     });
   }
 
+  $scope.blurInput = function() {
+    $scope.daily.toggleFlip = !$scope.daily.toggleFlip;
+    $scope.daily.toggleClose = 'yes';
+    $scope.daily.amount = '';
+    $scope.daily.hideGoalsButton = false;
+  }
+
   $scope.$watch(function () { return User.getUserObj() }, function (newVal, oldVal) {
     if((typeof newVal !== 'undefined' && typeof oldVal !== 'undefined' && newVal && oldVal && newVal.todaysBudget && oldVal.todaysBudget && newVal.todaysBudget != oldVal.todaysBudget) || (typeof newVal !== 'undefined' && newVal && (!oldVal || typeof oldVal === 'undefined'))) {
       $scope.getDaily();
