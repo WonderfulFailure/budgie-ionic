@@ -449,6 +449,16 @@ angular.module('budgie.services', ['ngStorage', 'budgie.config'])
       'icon': 'fa-yen',
       'format': 'left',
       'sliderUnit': 1
+    },
+    {
+      'currency': 'lira',
+      'character': '₺',
+      'placeholder': '00.00',
+      'decimalPlaces': 2,
+      'centsToWhole': 100,
+      'icon': 'fa-try',
+      'format': 'left',
+      'sliderUnit': 1
     }
   ];
 

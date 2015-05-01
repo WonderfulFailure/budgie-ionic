@@ -320,6 +320,9 @@ angular.module('budgie.controllers', ['budgie.config'])
 
   $scope.welcome = {};
 
+  $scope.welcome.currencies = Currency.getCurrencies();
+  console.log($scope.welcome.currencies);
+
   if($stateParams.selectedCurrency) {
     $scope.welcome.currency = Currency.getCurrency($stateParams.selectedCurrency);
     $scope.welcome.selectedCurrency = $scope.welcome.currency.currency;

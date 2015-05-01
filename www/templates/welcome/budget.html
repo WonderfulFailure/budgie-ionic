@@ -8,10 +8,7 @@
     </div>
     <div class="row">
       <div class="button-bar">
-        <a class="button button-calm button-outline" ng-class="{ 'active': welcome.selectedCurrency == 'usd' }" ng-click="welcome.selectedCurrency = 'usd'; changeCurrency('usd');"><i class="fa fa-usd"></i></a>
-        <a class="button button-calm button-outline" ng-class="{ 'active': welcome.selectedCurrency == 'gbp' }" ng-click="welcome.selectedCurrency = 'gbp'; changeCurrency('gbp');"><i class="fa fa-gbp"></i></a>
-        <a class="button button-calm button-outline" ng-class="{ 'active': welcome.selectedCurrency == 'euro' }" ng-click="welcome.selectedCurrency = 'euro'; changeCurrency('euro');"><i class="fa fa-euro"></i></a>
-        <a class="button button-calm button-outline" ng-class="{ 'active': welcome.selectedCurrency == 'yen' }" ng-click="welcome.selectedCurrency = 'yen'; changeCurrency('yen');"><i class="fa fa-yen"></i></a>
+        <a class="button button-calm button-outline" ng-repeat="currency in welcome.currencies" ng-class="{ 'active': welcome.selectedCurrency == currency.currency }" ng-click="welcome.selectedCurrency = currency.currency; changeCurrency(currency.currency);"><i class="fa {{ currency.icon }}"></i></a>
       </div>
     </div>
     <div class="padding-top padding-left padding-right">
