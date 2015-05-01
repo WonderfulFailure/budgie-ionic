@@ -100,6 +100,7 @@ angular.module('budgie.services', ['ngStorage', 'budgie.config'])
     $localStorage.sessionToken = null;
     localStorage.removeItem('ngStorage-sessionToken');
     currentUser = null;
+    userBuckets = null;
   }
 
   User.fetchFromParse = function(sessionToken) {
