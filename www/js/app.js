@@ -1,6 +1,6 @@
 angular.module('budgie', ['ionic', 'angular-progress-arc', 'ui.utils.masks', 'budgie.controllers', 'budgie.services', 'budgie.directives', 'budgie.config'])
 
-.run(function($ionicPlatform, User, Intercom) {
+.run(function($ionicPlatform, User, Intercom, Transactions) {
   $ionicPlatform.ready(function() {
     ionic.Platform.fullScreen();
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
@@ -19,6 +19,7 @@ angular.module('budgie', ['ionic', 'angular-progress-arc', 'ui.utils.masks', 'bu
           Intercom.update(result.email);
           User.fetchFromParse(result.sessionToken);
           User.fetchBucketsFromParse(result.sessionToken);
+          Transactions.fetchTransactionsFromParse(result.sessionToken);
         });
       }, 0);
     });
@@ -123,6 +124,16 @@ angular.module('budgie', ['ionic', 'angular-progress-arc', 'ui.utils.masks', 'bu
       'settingsContent': {
         templateUrl: "templates/settings/feedback.html",
         controller: 'SettingsCtrl'
+      }
+    }
+  })
+
+  .state('app.settings.transactions', {
+    url: '/transactions',
+    views: {
+      'settingsContent': {
+        templateUrl: 'templates/settings/transactions.html',
+        controller: 'TransactionsCtrl'
       }
     }
   });

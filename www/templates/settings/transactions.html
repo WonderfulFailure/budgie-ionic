@@ -1,0 +1,9 @@
+<ion-view view-title="">
+    <ion-content>
+        <ion-list show-delete="true">
+            <ion-item collection-repeat="transaction in transactions.list">
+                {{ transaction.amountDisplay }} <ion-delete-button class="ion-minus-circled" ng-click="removeTransaction($index)"></ion-delete-button>
+            </ion-item>
+        </ion-list>
+    </ion-content>
+</ion-view>

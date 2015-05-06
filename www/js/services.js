@@ -306,7 +306,7 @@ angular.module('budgie.services', ['ngStorage', 'budgie.config'])
   return User;
 }])
 
-.factory('Transactions', ['$http', '$localStorage', '$q', 'parseConfig', function($http, $localStorage, $q, parseConfig) {
+.factory('Transactions', ['$http', '$localStorage', '$q', 'parseConfig', 'User', 'Currency', function($http, $localStorage, $q, parseConfig, User, Currency) {
   var Transactions = {};
 
   // A list of transactions for the user
@@ -317,8 +317,60 @@ angular.module('budgie.services', ['ngStorage', 'budgie.config'])
   var newTransactionList = [];
 
   // Fetch transactions, either from localStorage or Parse
-  Transactions.getTransactions = function() {
+  Transactions.getTransactions = function(user) {
+    var deferred = $q.defer();
+    var promise = deferred.promise;
 
+    if(transactionList.length > 0) {
+      deferred.resolve(transactionList);
+    }
+    else {
+      Transactions.fetchTransactionsFromParse(user.sessionToken)
+      .success(function(transactions) {
+        transactionList = transactions;
+        deferred.resolve(transactionList);
+      })
+      .error(function(error) {
+        deferred.reject(error);
+      });
+    }
+
+    return promise;
+  }
+
+  Transactions.fetchTransactionsFromParse = function(sessionToken) {
+    var deferred = $q.defer();
+    var promise = deferred.promise;
+
+    var request = $http({
+        method  : 'POST',
+        url     : parseConfig.base_url + '/1/functions/GetAllUserTransactions',
+        headers : {
+          'X-Parse-Application-Id': parseConfig.appid,
+          'X-Parse-REST-API-Key': parseConfig.rest_key,
+          'X-Parse-Session-Token': sessionToken,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      })
+      .success(function(result) {
+        transactionList = result.result;
+        deferred.resolve(transactionList);
+      })
+      .error(function(error) {
+        deferred.reject(error);
+      });
+
+    promise.success = function(fn) {
+      promise.then(fn);
+      return promise;
+    }
+
+    promise.error = function(fn) {
+      promise.then(null, fn);
+      return promise;
+    }
+
+    return promise;
   }
 
   // Adds transaction to newTransactionList
@@ -342,7 +394,8 @@ angular.module('budgie.services', ['ngStorage', 'budgie.config'])
       }
     })
     .success(function(result) {
-      newTransactionList.push(result);
+      var newTransaction = result.result.transaction;
+      transactionList.unshift(newTransaction);
       deferred.resolve(result);
     })
     .error(function(error) {
@@ -366,6 +419,51 @@ angular.module('budgie.services', ['ngStorage', 'budgie.config'])
   // and removes them from newTransactionList
   Transactions.addNewTransactions = function() {
 
+  }
+
+  Transactions.removeTransaction = function(user, transId) {
+    var deferred = $q.defer();
+    var promise = deferred.promise;
+
+    if(!user.sessionToken) {
+      deferred.reject('Invalid user');
+    }
+
+    var request = $http({
+      method  : 'POST',
+      url     : parseConfig.base_url + '/1/functions/DeleteTransaction',
+      data    : 'id=' + transId,
+      headers : {
+        'X-Parse-Application-Id': parseConfig.appid,
+        'X-Parse-REST-API-Key': parseConfig.rest_key,
+        'X-Parse-Session-Token': user.sessionToken,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    })
+    .success(function(result) {
+      for(var i in transactionList) {
+        var trans = transactionList[i];
+        if(trans.objectId == transId) {
+          transactionList.splice(i, 1);
+        }
+      }
+      deferred.resolve(result);
+    })
+    .error(function(error) {
+      deferred.reject(error);
+    });
+
+    promise.success = function(fn) {
+      promise.then(fn);
+      return promise;
+    }
+
+    promise.error = function(fn) {
+      promise.then(null, fn);
+      return promise;
+    }
+
+    return promise;
   }
 
   return Transactions;

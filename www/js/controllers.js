@@ -1,6 +1,6 @@
 angular.module('budgie.controllers', ['budgie.config'])
 
-.controller('AppCtrl', function($scope, $rootScope, $ionicModal, $ionicPopup, $ionicHistory, $ionicLoading, $ionicScrollDelegate, $state, $http, $localStorage, User, Intercom, Currency) {
+.controller('AppCtrl', function($scope, $rootScope, $ionicModal, $ionicPopup, $ionicHistory, $ionicLoading, $ionicScrollDelegate, $state, $http, $localStorage, User, Intercom, Currency, Transactions) {
 
   $ionicScrollDelegate.freezeScroll( true );
 
@@ -15,6 +15,11 @@ angular.module('budgie.controllers', ['budgie.config'])
       User.currentUser().then(function(result) {
         Intercom.update(result.email);
       });
+  });
+
+  // Populate the transactions
+  User.currentUser().then(function(user) {
+    Transactions.fetchTransactionsFromParse(user.sessionToken);
   });
 
   // Keep our local user up to date when it changes
@@ -113,6 +118,7 @@ angular.module('budgie.controllers', ['budgie.config'])
 
   $scope.getDaily = function() {
     User.currentUser().then(function(result) {
+
       Currency.setCurrency(result.currency);
       $scope.daily.currency = Currency.getCurrency();
 
@@ -444,4 +450,35 @@ angular.module('budgie.controllers', ['budgie.config'])
     });
     $state.go('app.daily', {  }, { reload: true, inherit: false, notify: true });
   }
+})
+
+.controller('TransactionsCtrl', function($scope, $rootScope, $http, $state, $stateParams, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicViewSwitcher, User, Intercom, Currency, Transactions) {
+
+  $scope.transactions = {
+    list: []
+  };
+
+  $scope.removeTransaction = function(index) {
+    User.currentUser().then(function(user) {
+      Transactions.removeTransaction(user, $scope.transactions.list[index].transId);
+      var newBalance = user.todaysBudget + $scope.transactions.list[index].amount;
+      User.update({ 'todaysBudget': newBalance }, true);
+      $scope.transactions.list.splice(index, 1);
+    });
+  }
+
+  User.currentUser().then(function(user) {
+    Transactions.getTransactions(user).then(function(transactions) {
+      for(var i in transactions) {
+        $scope.transactions.list.push(
+          {
+            amountDisplay: Currency.toDisplay(transactions[i].amount),
+            amount: transactions[i].amount,
+            transId: transactions[i].objectId
+          }
+        );
+      }
+    });
+  });
+
 });
