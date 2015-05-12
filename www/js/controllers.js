@@ -60,12 +60,16 @@ angular.module('budgie.controllers', ['budgie.config'])
         $scope.closeLogin();
 
         Intercom.authenticate(result.email);
+
+        User.fetchFromParse(result.sessionToken);
+        User.fetchBucketsFromParse(result.sessionToken);
+        Transactions.fetchTransactionsFromParse(result.sessionToken);
       })
       .error(function(error) {
         $ionicPopup.alert({
           title: 'Whoops!',
           template: 'Bwraak!  That login info didn\'t work!',
-          buttons: [{ text: 'Try again', type: 'button-calm' }]
+          buttons: [{ text: 'Give me another shot', type: 'button-calm' }]
         });
       });
     }
@@ -191,6 +195,10 @@ angular.module('budgie.controllers', ['budgie.config'])
     if((typeof newVal !== 'undefined' && typeof oldVal !== 'undefined' && newVal && oldVal && newVal.todaysBudget && oldVal.todaysBudget && newVal.todaysBudget != oldVal.todaysBudget) || (typeof newVal !== 'undefined' && newVal && (!oldVal || typeof oldVal === 'undefined'))) {
       $scope.getDaily();
     }
+
+    if(newVal) {
+      $scope.daily.today = newVal.todaysDate;
+    }
   }, true);
 
   // Get fresh transactions after logging in
@@ -209,6 +217,7 @@ angular.module('budgie.controllers', ['budgie.config'])
 .controller('GoalCtrl', function($scope, $http, $state, $localStorage, $ionicHistory, $ionicPopup, parseConfig, User, Intercom, Currency) {
   $scope.goal = {
     'amount': 0,
+    'disableSlider': false
   };
 
   User.currentUser().then(function(user) {
@@ -223,6 +232,12 @@ angular.module('budgie.controllers', ['budgie.config'])
     $scope.goal.todaysBudgetDisplay = Currency.toDisplay(user.todaysBudget);
     $scope.goal.amountDisplay = Currency.toDisplay($scope.goal.amount);
 
+    // Disable slider if the user is negative and there is no goal progress
+    // to take from
+    if($scope.goal.todaysBudget <= 0 && $scope.goal.bucketProgress == 0) {
+      $scope.goal.disableSlider = true;
+    }
+
     $scope.updateSlider();
 
     User.getUserBuckets()
@@ -230,8 +245,12 @@ angular.module('budgie.controllers', ['budgie.config'])
       $scope.goal.min = -data.progress || 0;
       $scope.goal.max = data.goal - data.progress;
 
-      if($scope.goal.max > $scope.goal.todaysBudget)
-        $scope.goal.max = $scope.goal.todaysBudget;
+      if($scope.goal.max > $scope.goal.todaysBudget) {
+        if($scope.goal.todaysBudget <= 0)
+          $scope.goal.max = 0;
+        else
+          $scope.goal.max = $scope.goal.todaysBudget;
+      }
 
       $scope.updateSlider();
 
@@ -422,12 +441,13 @@ angular.module('budgie.controllers', ['budgie.config'])
 
 })
 
-.controller('SettingsCtrl', function($scope, $rootScope, $http, $state, $stateParams, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicViewSwitcher, User, Intercom, Currency) {
+.controller('SettingsCtrl', function($scope, $rootScope, $http, $state, $stateParams, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicViewSwitcher, $ionicPopup, User, Intercom, Currency) {
 
   $scope.settings = {
     'monthlyBudget': '',
     'bucketGoal': '',
-    'bucketName': ''
+    'bucketName': '',
+    'user': {}
   };
 
   User.currentUser().then(function(user) {
@@ -435,6 +455,8 @@ angular.module('budgie.controllers', ['budgie.config'])
     $scope.settings.currency = Currency.getCurrency();
 
     $scope.settings.monthlyBudget = Currency.toWhole(user.monthlyBudget);
+
+    $scope.settings.user = user;
   });
 
   User.getUserBuckets().then(function(buckets) {
@@ -443,7 +465,19 @@ angular.module('budgie.controllers', ['budgie.config'])
   });
 
   $scope.updateSettings = function() {
-    User.update({ 'monthlyBudget': Currency.toStorageFormat($scope.settings.monthlyBudget), 'dailyBudget': Currency.toStorageFormat($scope.settings.monthlyBudget) / 30 });
+    var newMonthlyBudget = Currency.toStorageFormat($scope.settings.monthlyBudget);
+    var newDailyBalance = parseFloat(newMonthlyBudget / 30);
+    User.currentUser().then(function(user) {
+      if(user.monthlyBudget != newMonthlyBudget) {
+        $ionicPopup.alert({
+          title: 'Look at that',
+          template: 'Starting tomorrow, your daily balance will be <strong>' + Currency.toDisplay(parseInt(newDailyBalance)) + '</strong>!' ,
+          buttons: [{ text: 'Oh yeah!', type: 'button-calm' }]
+        });
+      }
+      User.update({ 'monthlyBudget': Currency.toStorageFormat($scope.settings.monthlyBudget), 'dailyBudget': Currency.toStorageFormat($scope.settings.monthlyBudget) / 30 });
+    });
+
     User.updateBuckets({ 'bucketGoal': Currency.toStorageFormat($scope.settings.bucketGoal), 'bucketName': $scope.settings.bucketName });
     $ionicHistory.nextViewOptions({
       disableBack: true

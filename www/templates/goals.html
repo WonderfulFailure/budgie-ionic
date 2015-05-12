@@ -58,7 +58,7 @@
                     </div>
             </div>
         </div>
-        <div class="row" ng-show="goal.todaysBudget >= 0 && !goal.showTomorrowMessage">
+        <div class="row">
             <div class="col">
                 <div class="contribution text-center">{{ goal.amountDisplay }}</div>
             </div>
@@ -66,7 +66,7 @@
         <form ng-submit="processForm()">
             <div class="row">
                 <div class="col text-center">
-                    <input type="range" style="border:none;-webkit-box-shadow:none;width:80%;margin:0 auto 30px auto;" class="form-control" min="{{ goal.min }}" max="{{ goal.max }}" step="{{ goal.currency.sliderUnit }}" ng-change="updateSlider($event)" ng-model="goal.amount">
+                    <input type="range" style="border:none;-webkit-box-shadow:none;width:80%;margin:0 auto 30px auto;" class="form-control" min="{{ goal.min }}" max="{{ goal.max }}" step="{{ goal.currency.sliderUnit }}" ng-change="updateSlider($event)" ng-model="goal.amount" ng-disabled="goal.disableSlider">
                 </div>
             </div>
             <div class="padding">

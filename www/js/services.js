@@ -142,8 +142,11 @@ angular.module('budgie.services', ['ngStorage', 'budgie.config'])
     var deferred = $q.defer();
     var promise = deferred.promise;
 
+    var usersDate = new Date();
+
     // User is logged in
     if(currentUser) {
+      currentUser.todaysDate = usersDate;
       deferred.resolve(currentUser);
     }
     // User was logged in, need to fetch details again
@@ -151,6 +154,7 @@ angular.module('budgie.services', ['ngStorage', 'budgie.config'])
       User.fetchFromParse($localStorage.sessionToken)
       .success(function(result) {
         currentUser = result;
+        currentUser.todaysDate = usersDate;
         deferred.resolve(result);
       })
       .error(function(error) {
