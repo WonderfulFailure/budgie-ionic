@@ -1,9 +1,14 @@
 <ion-view view-title="">
     <ion-content>
-        <ion-list show-delete="true">
-            <ion-item collection-repeat="transaction in transactions.list">
-                {{ transaction.amountDisplay }} <ion-delete-button class="ion-minus-circled" ng-click="removeTransaction($index)"></ion-delete-button>
+        <ion-list can-swipe="true">
+            <ion-item ng-repeat-start="transactionsByDate in transactions.list | toArray" class="item-divider">
+                {{ transactionsByDate.$key }}
             </ion-item>
+            <ion-item ng-repeat="transaction in transactionsByDate | orderBy: '-whenRaw'">
+            	{{ transaction.amountDisplay }}
+                <ion-option-button class="button-assertive" ng-click="removeTransaction(transactionsByDate.$key, $index)">Remove</ion-option-button>
+            </ion-item>
+            <ion-item ng-repeat-end></ion-item>
         </ion-list>
     </ion-content>
 </ion-view>

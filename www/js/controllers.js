@@ -486,32 +486,54 @@ angular.module('budgie.controllers', ['budgie.config'])
   }
 })
 
-.controller('TransactionsCtrl', function($scope, $rootScope, $http, $state, $stateParams, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicViewSwitcher, User, Intercom, Currency, Transactions) {
+.controller('TransactionsCtrl', function($scope, $rootScope, $http, $state, $stateParams, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicViewSwitcher, $ionicPopup, $ionicListDelegate, User, Intercom, Currency, Transactions) {
 
   $scope.transactions = {
-    list: []
+    list: {}
   };
 
-  $scope.removeTransaction = function(index) {
-    User.currentUser().then(function(user) {
-      Transactions.removeTransaction(user, $scope.transactions.list[index].transId);
-      var newBalance = user.todaysBudget + $scope.transactions.list[index].amount;
-      User.update({ 'todaysBudget': newBalance }, true);
-      $scope.transactions.list.splice(index, 1);
+  $scope.removeTransaction = function(date, index) {
+    $ionicListDelegate.closeOptionButtons();
+    var transaction = $scope.transactions.list[date][index];
+    $ionicPopup.confirm({
+      title: 'Hold up',
+      template: 'Are you sure you want to delete this <strong>' + transaction.amountDisplay + '</strong> transaction?',
+      okText: '<strong>Yeah</strong>',
+      okType: 'button-calm',
+      cancelText: 'Nah'
+    })
+    .then(function(res) {
+      if(res) {
+        User.currentUser().then(function(user) {
+          Transactions.removeTransaction(user, $scope.transactions.list[date][index].transId);
+          var newBalance = user.todaysBudget + $scope.transactions.list[date][index].amount;
+          User.update({ 'todaysBudget': newBalance }, true);
+          $scope.transactions.list[date].splice(index, 1);
+
+          if($scope.transactions.list[date].length == 0) {
+            delete $scope.transactions.list[date];
+          }
+        });
+      }
     });
   }
 
   User.currentUser().then(function(user) {
     Transactions.getTransactions(user).then(function(transactions) {
       for(var i in transactions) {
-        $scope.transactions.list.push(
+        var when = moment(transactions[i].createdAt).format('dddd, MMMM Do YYYY');
+        if(!$scope.transactions.list[when]) $scope.transactions.list[when] = [];
+        $scope.transactions.list[when].push(
           {
             amountDisplay: Currency.toDisplay(transactions[i].amount),
             amount: transactions[i].amount,
-            transId: transactions[i].objectId
+            transId: transactions[i].objectId,
+            whenRaw: transactions[i].createdAt,
+            when: when
           }
         );
       }
+      console.log($scope.transactions.list);
     });
   });
 
