@@ -196,7 +196,7 @@ angular.module('budgie.controllers', ['budgie.config'])
       $scope.getDaily();
     }
 
-    if(newVal) {
+    if(newVal && newVal.todaysDate) {
       $scope.daily.today = newVal.todaysDate;
     }
   }, true);
@@ -209,6 +209,7 @@ angular.module('budgie.controllers', ['budgie.config'])
   // Animation cleanup
   $scope.$on('$ionicView.afterLeave', function(scope, states) {
     $scope.daily.toggleBounce = false;
+    $scope.daily.toggleClose = false;
   });
 
   $scope.getDaily();
