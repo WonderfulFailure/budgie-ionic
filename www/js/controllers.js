@@ -22,12 +22,6 @@ angular.module('budgie.controllers', ['budgie.config'])
     Transactions.fetchTransactionsFromParse(user.sessionToken);
   });
 
-  // Keep our local user up to date when it changes
-  // (useful for when Parse finishes its update)
-  $rootScope.$watch(function () { return User.getUserObj() }, function (newVal, oldVal) {
-    User.update(newVal, true);
-  });
-
   // Form data for the login modal
   $scope.loginData = {};
 
@@ -167,7 +161,7 @@ angular.module('budgie.controllers', ['budgie.config'])
 
     User.currentUser().then(function(user) {
       var amountInCents = Currency.toStorageFormat(amount);
-      var newBalance = user.todaysBudget - amountInCents;
+      var newBalance = Math.round(user.todaysBudget - amountInCents);
 
       // Update just local data
       User.update({ 'todaysBudget': newBalance }, true);
@@ -191,15 +185,16 @@ angular.module('budgie.controllers', ['budgie.config'])
     $scope.daily.hideGoalsButton = false;
   }
 
-  $scope.$watch(function () { return User.getUserObj() }, function (newVal, oldVal) {
-    if((typeof newVal !== 'undefined' && typeof oldVal !== 'undefined' && newVal && oldVal && newVal.todaysBudget && oldVal.todaysBudget && newVal.todaysBudget != oldVal.todaysBudget) || (typeof newVal !== 'undefined' && newVal && (!oldVal || typeof oldVal === 'undefined'))) {
-      $scope.getDaily();
-    }
+  $scope.$on( "$ionicView.beforeEnter", function( scopes, states ) {
+    User.currentUser().then(function(user) {
+      if($scope.daily.todaysBudget != user.todaysBudget)
+        $scope.getDaily();
 
-    if(newVal && newVal.todaysDate) {
-      $scope.daily.today = newVal.todaysDate;
-    }
-  }, true);
+      if(user.todaysDate) {
+        $scope.daily.today = user.todaysDate;
+      }
+    });
+  });
 
   // Get fresh transactions after logging in
   $scope.$on('modal.hidden', function(modal) {
@@ -211,8 +206,6 @@ angular.module('budgie.controllers', ['budgie.config'])
     $scope.daily.toggleBounce = false;
     $scope.daily.toggleClose = false;
   });
-
-  $scope.getDaily();
 })
 
 .controller('GoalCtrl', function($scope, $http, $state, $localStorage, $ionicHistory, $ionicPopup, parseConfig, User, Intercom, Currency) {
@@ -265,7 +258,7 @@ angular.module('budgie.controllers', ['budgie.config'])
       $http({
         method  : 'POST',
         url     : 'https://api.parse.com/1/functions/AddBucketContribution',
-        data    : 'amount=' + Currency.toWhole($scope.goal.amount),
+        data    : 'amount=' + Currency.toWhole(Math.round($scope.goal.amount)),
         headers : {
           'X-Parse-Application-Id': parseConfig.appid,
           'X-Parse-REST-API-Key': parseConfig.rest_key,
@@ -316,30 +309,16 @@ angular.module('budgie.controllers', ['budgie.config'])
 
         $scope.goal.bucketProgressDisplay = Currency.toDisplay(buckets.progress);
 
-        $scope.goal.min = -$scope.goal.bucketProgress || 0;
+        $scope.goal.min = Math.round(-$scope.goal.bucketProgress) || 0;
         $scope.goal.max = $scope.goal.bucketGoal - $scope.goal.bucketProgress;
 
         if($scope.goal.max > $scope.goal.originalTodaysBudget) {
-          $scope.goal.max = $scope.goal.originalTodaysBudget;
+          $scope.goal.max = Math.round($scope.goal.originalTodaysBudget);
 
           if($scope.goal.max < 0) {
             $scope.goal.max = 0;
           }
         }
-
-        /*
-
-        if($scope.goal.max > $scope.goal.todaysBudget)
-          $scope.goal.max = $scope.goal.todaysBudget;
-
-        if($scope.goal.max > $scope.goal.todaysBudget) {
-          if($scope.goal.todaysBudget <= 0)
-            $scope.goal.max = 0;
-          else
-            $scope.goal.max = $scope.goal.todaysBudget;
-        }
-
-        */
 
         $scope.updateSlider();
       });

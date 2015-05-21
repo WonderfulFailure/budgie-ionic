@@ -598,6 +598,7 @@ angular.module('budgie.services', ['ngStorage', 'budgie.config'])
   }
 
   CurrencyService.toDisplay = function(amountInCents) {
+    amountInCents = Math.round(amountInCents);
     if(currentCurrency) {
       var negativeSymbol = '';
       if(amountInCents < 0) {
