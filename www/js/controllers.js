@@ -221,48 +221,6 @@ angular.module('budgie.controllers', ['budgie.config'])
     'disableSlider': false
   };
 
-  User.currentUser().then(function(user) {
-
-    Currency.setCurrency(user.currency);
-    $scope.goal.currency = Currency.getCurrency();
-
-    $scope.goal.dailyBudget = user.dailyBudget;
-    $scope.goal.todaysBudget = user.todaysBudget;
-    $scope.goal.originalTodaysBudget = user.todaysBudget;
-
-    $scope.goal.todaysBudgetDisplay = Currency.toDisplay(user.todaysBudget);
-    $scope.goal.amountDisplay = Currency.toDisplay($scope.goal.amount);
-
-    // Disable slider if the user is negative and there is no goal progress
-    // to take from
-    if($scope.goal.todaysBudget <= 0 && $scope.goal.bucketProgress == 0) {
-      $scope.goal.disableSlider = true;
-    }
-
-    $scope.updateSlider();
-
-    User.getUserBuckets()
-    .success(function(data) {
-      $scope.goal.min = -data.progress || 0;
-      $scope.goal.max = data.goal - data.progress;
-
-      if($scope.goal.max > $scope.goal.todaysBudget) {
-        if($scope.goal.todaysBudget <= 0)
-          $scope.goal.max = 0;
-        else
-          $scope.goal.max = $scope.goal.todaysBudget;
-      }
-
-      $scope.updateSlider();
-
-      $scope.$watch(function () { return User.getUserObj() }, function (newVal, oldVal) {
-        if(newVal && newVal.todaysBudget && newVal.todaysBudget != oldVal.todaysBudget) {
-          $scope.updateSlider();
-        }
-      });
-    });
-  });
-
   $scope.updateSlider = function() {
     $scope.goal.goalComplete = $scope.goal.bucketProgress / $scope.goal.bucketGoal;
     if($scope.goal.goalComplete > 1) $scope.goal.goalComplete = 1;
@@ -327,7 +285,30 @@ angular.module('budgie.controllers', ['budgie.config'])
   }
 
   $scope.$on( "$ionicView.beforeEnter", function( scopes, states ) {
-      User.getUserBuckets().success(function(buckets) {
+
+    User.currentUser().then(function(user) {
+
+      Currency.setCurrency(user.currency);
+      $scope.goal.currency = Currency.getCurrency();
+
+      $scope.goal.dailyBudget = user.dailyBudget;
+      $scope.goal.todaysBudget = user.todaysBudget;
+      $scope.goal.originalTodaysBudget = user.todaysBudget;
+
+      $scope.goal.todaysBudgetDisplay = Currency.toDisplay(user.todaysBudget);
+      $scope.goal.amountDisplay = Currency.toDisplay($scope.goal.amount);
+
+      // Disable slider if the user is negative and there is no goal progress
+      // to take from
+      if($scope.goal.todaysBudget <= 0 && $scope.goal.bucketProgress == 0) {
+        $scope.goal.disableSlider = true;
+      }
+
+      User.getUserBuckets()
+      .success(function(buckets) {
+        $scope.goal.min = -buckets.progress || 0;
+        $scope.goal.max = buckets.goal - buckets.progress;
+
         $scope.goal.bucketProgress = buckets.progress;
         $scope.goal.originalBucketProgress = buckets.progress;
         $scope.goal.bucketGoal = buckets.goal;
@@ -338,11 +319,31 @@ angular.module('budgie.controllers', ['budgie.config'])
         $scope.goal.min = -$scope.goal.bucketProgress || 0;
         $scope.goal.max = $scope.goal.bucketGoal - $scope.goal.bucketProgress;
 
+        if($scope.goal.max > $scope.goal.originalTodaysBudget) {
+          $scope.goal.max = $scope.goal.originalTodaysBudget;
+
+          if($scope.goal.max < 0) {
+            $scope.goal.max = 0;
+          }
+        }
+
+        /*
+
         if($scope.goal.max > $scope.goal.todaysBudget)
           $scope.goal.max = $scope.goal.todaysBudget;
 
+        if($scope.goal.max > $scope.goal.todaysBudget) {
+          if($scope.goal.todaysBudget <= 0)
+            $scope.goal.max = 0;
+          else
+            $scope.goal.max = $scope.goal.todaysBudget;
+        }
+
+        */
+
         $scope.updateSlider();
       });
+    });
   });
 })
 
