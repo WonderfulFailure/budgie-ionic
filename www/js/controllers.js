@@ -451,8 +451,8 @@ angular.module('budgie.controllers', ['budgie.config'])
     User.currentUser().then(function(user) {
       if(user.monthlyBudget != newMonthlyBudget) {
         $ionicPopup.alert({
-          title: 'Look at that',
-          template: 'Starting tomorrow, your daily balance will be <strong>' + Currency.toDisplay(parseInt(newDailyBalance)) + '</strong>!' ,
+          title: 'New money, suit and tie',
+          template: 'Starting tomorrow, your daily allowance will be <strong>' + Currency.toDisplay(parseInt(newDailyBalance)) + '</strong>!' ,
           buttons: [{ text: 'Oh yeah!', type: 'button-calm' }]
         });
       }
