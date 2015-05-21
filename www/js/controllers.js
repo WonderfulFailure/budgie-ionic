@@ -161,7 +161,7 @@ angular.module('budgie.controllers', ['budgie.config'])
 
     User.currentUser().then(function(user) {
       var amountInCents = Currency.toStorageFormat(amount);
-      var newBalance = Math.round(user.todaysBudget - amountInCents);
+      var newBalance = user.todaysBudget - amountInCents;
 
       // Update just local data
       User.update({ 'todaysBudget': newBalance }, true);
@@ -258,7 +258,7 @@ angular.module('budgie.controllers', ['budgie.config'])
       $http({
         method  : 'POST',
         url     : 'https://api.parse.com/1/functions/AddBucketContribution',
-        data    : 'amount=' + Currency.toWhole(Math.round($scope.goal.amount)),
+        data    : 'amount=' + Currency.toWhole($scope.goal.amount),
         headers : {
           'X-Parse-Application-Id': parseConfig.appid,
           'X-Parse-REST-API-Key': parseConfig.rest_key,
