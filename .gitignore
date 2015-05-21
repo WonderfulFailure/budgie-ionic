@@ -7,3 +7,4 @@ plugins/
 
 # No system files allowed
 .DS_Store
+my-release-key.keystore
