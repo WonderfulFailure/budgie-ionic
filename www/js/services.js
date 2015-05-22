@@ -378,7 +378,7 @@ angular.module('budgie.services', ['ngStorage', 'budgie.config'])
   }
 
   // Adds transaction to newTransactionList
-  Transactions.addTransaction = function(user, transaction) {
+  Transactions.addTransaction = function(user, transaction, label) {
     var deferred = $q.defer();
     var promise = deferred.promise;
 
@@ -386,10 +386,16 @@ angular.module('budgie.services', ['ngStorage', 'budgie.config'])
       deferred.reject('Invalid user');
     }
 
+    var dataString = 'amount=' + transaction;
+
+    if(label) {
+      dataString = dataString + '&label=' + label;
+    }
+
     var request = $http({
       method  : 'POST',
       url     : parseConfig.base_url + '/1/functions/AddTransaction',
-      data    : 'amount=' + transaction,
+      data    : dataString,
       headers : {
         'X-Parse-Application-Id': parseConfig.appid,
         'X-Parse-REST-API-Key': parseConfig.rest_key,

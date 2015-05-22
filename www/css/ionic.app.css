@@ -7663,6 +7663,9 @@ input[type="tel"] {
     .radial.small label {
       font-size: 18px;
       top: 50px; }
+  @media (max-height: 480px) {
+    .radial.shrink {
+      display: none; } }
 
 .text-muted {
   color: #ddd; }
@@ -7671,7 +7674,7 @@ input[type="tel"] {
 .flip-container {
   -webkit-perspective: 1000;
   perspective: 1000;
-  height: 67px; }
+  height: 70px; }
 
 /* flip the pane when hovered */
 .flip-container.flip .flipper {
@@ -7698,7 +7701,7 @@ input[type="tel"] {
   position: absolute;
   top: 0;
   left: 0;
-  height: 87px; }
+  height: 110px; }
 
 /* front pane, placed above back */
 .front {
@@ -7711,6 +7714,8 @@ input[type="tel"] {
 .back {
   -webkit-transform: rotateX(180deg);
   transform: rotateX(180deg); }
+  .back .list {
+    margin-top: 13px; }
 
 h2 {
   font-family: 'Helvetica Neue', sans-serif;
@@ -7897,9 +7902,10 @@ h2 {
   -webkit-animation: shrink 1000ms linear both;
   animation: shrink 1000ms linear both;
   width: 202px;
-  height: 80px;
+  height: 130px;
   transition: height 0.2s ease-in-out;
-  margin-top: -30px; }
+  margin-top: -30px;
+  transition: 0.3s; }
 
 /* Generated with Bounce.js. Edit at http://goo.gl/2lyQWL */
 @-webkit-keyframes shrink {
@@ -7988,7 +7994,8 @@ h2 {
   height: 200px;
   transition: height 0.1s linear;
   -webkit-animation: unshrink 600ms linear both;
-  animation: unshrink 600ms linear both; }
+  animation: unshrink 600ms linear both;
+  transition: 0.3s; }
 
 /* Generated with Bounce.js. Edit at http://goo.gl/LzF0u8 */
 @-webkit-keyframes unshrink {

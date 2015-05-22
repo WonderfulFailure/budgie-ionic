@@ -41,10 +41,13 @@
             </div>
             <div class="back">
                 <form ng-submit="spendMoney()">
-                    <div class="list list-inset">
+                    <div class="list padding-left padding-right">
                         <label class="item item-input">
                             <i class="fa {{ daily.currency.icon }}"></i>
                             <input type="tel" id="spend" placeholder="{{ daily.currency.placeholder }}" ng-model="daily.amount" ui-number-mask="daily.currency.decimalPlaces" ui-hide-group-sep focus-me="focusMe" />
+                        </label>
+                        <label class="item item-input">
+                            <input type="text" placeholder="{{ daily.label_placeholder }}" ng-model="daily.label" />
                         </label>
                     </div>
                 </form>

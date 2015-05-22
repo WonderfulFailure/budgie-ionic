@@ -96,7 +96,7 @@ angular.module('budgie.controllers', ['budgie.config'])
 
 .controller('DailyCtrl', function($scope, $rootScope, $http, $state, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicPopup, $ionicLoading, User, Transactions, Intercom, Currency) {
 
-  $scope.daily = { 'today': new Date(), 'toggleBounce': false };
+  $scope.daily = { 'today': new Date(), 'toggleBounce': false, 'label_placeholder': 'What\'s this transaction for? (optional)' };
   $scope.daily.currency = Currency.getCurrency();
   $scope.user = {};
 
@@ -158,12 +158,13 @@ angular.module('budgie.controllers', ['budgie.config'])
     User.currentUser().then(function(user) {
       var amountInCents = Currency.toStorageFormat(amount);
       var newBalance = user.todaysBudget - amountInCents;
+      var transactionLabel = $scope.daily.label;
 
       // Update just local data
       User.update({ 'todaysBudget': newBalance }, true);
 
       // Add the transaction to parse
-      Transactions.addTransaction(user, amount);
+      Transactions.addTransaction(user, amount, transactionLabel);
 
       $scope.getDaily();
 
@@ -504,11 +505,11 @@ angular.module('budgie.controllers', ['budgie.config'])
             amount: transactions[i].amount,
             transId: transactions[i].objectId,
             whenRaw: transactions[i].createdAt,
-            when: when
+            when: when,
+            label: transactions[i].label == 'Cash via app' ? 'No label' : transactions[i].label
           }
         );
       }
-      console.log($scope.transactions.list);
     });
   });
 

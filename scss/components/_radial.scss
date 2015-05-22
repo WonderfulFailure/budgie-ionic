@@ -102,4 +102,10 @@ $radial-animation-inner-two-delay: 0; //$radial-animation-speed * 2;
             top: 50px;
         }
     }
+
+    @media (max-height: 480px) {
+        &.shrink {
+            display: none;
+        }
+    }
 }
