@@ -150,8 +150,6 @@ angular.module('budgie.controllers', ['budgie.config'])
         $scope.daily.secondaryRolloverComplete = 0.0;
       }
 
-    }, function(error) {
-      $scope.showLogin();
     });
   }
 
