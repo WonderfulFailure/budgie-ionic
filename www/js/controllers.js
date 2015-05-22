@@ -149,7 +149,6 @@ angular.module('budgie.controllers', ['budgie.config'])
         $scope.daily.rolloverComplete = 0.0;
         $scope.daily.secondaryRolloverComplete = 0.0;
       }
-
     });
   }
 
@@ -170,8 +169,6 @@ angular.module('budgie.controllers', ['budgie.config'])
 
       Intercom.trackEvent('spent-money');
 
-    }, function(error) {
-      $scope.showLogin();
     });
   }
 
@@ -333,7 +330,6 @@ angular.module('budgie.controllers', ['budgie.config'])
   $scope.welcome = {};
 
   $scope.welcome.currencies = Currency.getCurrencies();
-  console.log($scope.welcome.currencies);
 
   if($stateParams.selectedCurrency) {
     $scope.welcome.currency = Currency.getCurrency($stateParams.selectedCurrency);
@@ -406,7 +402,6 @@ angular.module('budgie.controllers', ['budgie.config'])
     $ionicHistory.nextViewOptions({
       disableBack: true
     });
-    $scope.showLogin();
     $rootScope.sideMenuVisible = true;
     $state.go('app.daily', {  }, { reload: true, inherit: false, notify: true });
   }
