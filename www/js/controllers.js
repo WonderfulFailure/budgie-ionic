@@ -116,7 +116,6 @@ angular.module('budgie.controllers', ['budgie.config'])
 
   $scope.getDaily = function() {
     User.currentUser().then(function(result) {
-
       Currency.setCurrency(result.currency);
       $scope.daily.currency = Currency.getCurrency();
 
@@ -193,6 +192,8 @@ angular.module('budgie.controllers', ['budgie.config'])
       if(user.todaysDate) {
         $scope.daily.today = user.todaysDate;
       }
+    }, function(error) {
+      $scope.showLogin();
     });
   });
 
