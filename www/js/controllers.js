@@ -1,6 +1,6 @@
 angular.module('budgie.controllers', ['budgie.config'])
 
-.controller('AppCtrl', function($scope, $rootScope, $ionicModal, $ionicPopup, $ionicHistory, $ionicLoading, $ionicScrollDelegate, $state, $http, $localStorage, User, Intercom, Currency, Transactions) {
+.controller('AppCtrl', function($scope, $rootScope, $ionicModal, $ionicPopup, $ionicHistory, $ionicLoading, $ionicScrollDelegate, $state, $http, $localStorage, $ionicPlatform, User, Intercom, Currency, Transactions) {
 
   $ionicScrollDelegate.freezeScroll( true );
 
@@ -94,7 +94,7 @@ angular.module('budgie.controllers', ['budgie.config'])
   }
 })
 
-.controller('DailyCtrl', function($scope, $rootScope, $http, $state, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicPopup, $ionicLoading, User, Transactions, Intercom, Currency) {
+.controller('DailyCtrl', function($scope, $rootScope, $http, $state, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicPopup, $ionicLoading, $timeout, User, Transactions, Intercom, Currency) {
 
   $scope.daily = { 'today': new Date(), 'toggleBounce': false, 'label_placeholder': 'What\'s this transaction for? (optional)' };
   $scope.daily.currency = Currency.getCurrency();
@@ -127,7 +127,9 @@ angular.module('budgie.controllers', ['budgie.config'])
       $scope.daily.dailyBudgetDisplay = Currency.toDisplay(result.dailyBudget);
 
       $scope.daily.toggleBounce = false;
-      $scope.daily.toggleBounce = true;
+      $timeout(function() {
+        $scope.daily.toggleBounce = true;
+      }, 10);
 
       if($scope.daily.todaysBudget > $scope.daily.dailyBudget) {
         $scope.daily.dailyComplete = 1.0;
@@ -203,9 +205,20 @@ angular.module('budgie.controllers', ['budgie.config'])
     $scope.daily.toggleBounce = false;
     $scope.daily.toggleClose = false;
   });
+
+  $scope.$on('userUpdate', function(event, args) {
+    User.currentUser().then(function(user) {
+      if(user.todaysBudget != $scope.daily.todaysBudget) {
+        $timeout(function() {
+          $scope.daily.todaysBudgetDisplay = '';
+          $scope.getDaily();
+        }, 200);
+      }
+    });
+  });
 })
 
-.controller('GoalCtrl', function($scope, $http, $state, $localStorage, $ionicHistory, $ionicPopup, parseConfig, User, Intercom, Currency) {
+.controller('GoalCtrl', function($scope, $http, $state, $localStorage, $ionicHistory, $ionicPopup, $timeout, parseConfig, User, Intercom, Currency) {
   $scope.goal = {
     'amount': 0,
     'disableSlider': false
@@ -274,8 +287,7 @@ angular.module('budgie.controllers', ['budgie.config'])
     });
   }
 
-  $scope.$on( "$ionicView.beforeEnter", function( scopes, states ) {
-
+  $scope.calcGoalData = function() {
     User.currentUser().then(function(user) {
 
       Currency.setCurrency(user.currency);
@@ -320,6 +332,14 @@ angular.module('budgie.controllers', ['budgie.config'])
         $scope.updateSlider();
       });
     });
+  }
+
+  $scope.$on( "$ionicView.beforeEnter", function( scopes, states ) {
+    $scope.calcGoalData();
+  });
+
+  $scope.$on('userUpdate', function(event, args) {
+    $scope.calcGoalData();
   });
 })
 

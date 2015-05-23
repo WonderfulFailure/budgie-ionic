@@ -1,6 +1,6 @@
 angular.module('budgie', ['ionic', 'angular-progress-arc', 'ui.utils.masks', 'budgie.controllers', 'budgie.services', 'budgie.directives', 'budgie.config'])
 
-.run(function($ionicPlatform, User, Intercom, Transactions) {
+.run(function($rootScope, $ionicPlatform, User, Intercom, Transactions) {
   $ionicPlatform.ready(function() {
     ionic.Platform.fullScreen();
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
@@ -17,7 +17,9 @@ angular.module('budgie', ['ionic', 'angular-progress-arc', 'ui.utils.masks', 'bu
       setTimeout(function() {
         User.currentUser().then(function(result) {
           Intercom.update(result.email);
-          User.fetchFromParse(result.sessionToken);
+          User.fetchFromParse(result.sessionToken).then(function(newUserData) {
+            $rootScope.$broadcast('userUpdate');
+          });
           User.fetchBucketsFromParse(result.sessionToken);
           Transactions.fetchTransactionsFromParse(result.sessionToken);
         });
