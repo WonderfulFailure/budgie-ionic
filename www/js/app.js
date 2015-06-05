@@ -1,4 +1,4 @@
-angular.module('budgie', ['ionic', 'angular-progress-arc', 'ui.utils.masks', 'budgie.controllers', 'budgie.services', 'budgie.directives', 'budgie.config'])
+angular.module('budgie', ['ionic', 'ionic.service.core', 'ionic.service.push', 'angular-progress-arc', 'ui.utils.masks', 'budgie.controllers', 'budgie.services', 'budgie.directives', 'budgie.config'])
 
 .run(function($rootScope, $ionicPlatform, User, Intercom, Transactions) {
   $ionicPlatform.ready(function() {
@@ -141,4 +141,16 @@ angular.module('budgie', ['ionic', 'angular-progress-arc', 'ui.utils.masks', 'bu
   });
   // if none of the above states are matched, use this as the fallback
   $urlRouterProvider.otherwise('/app/daily');
-});
+})
+
+.config(['$ionicAppProvider', function($ionicAppProvider) {
+  // Identify app
+  $ionicAppProvider.identify({
+    // The App ID for the server
+    app_id: 'b306568f',
+    // The API key all services will use for this app
+    api_key: 'c0d97b315fd074e3d2ff432431107b55a6ff732d949bb44c'
+    // Your GCM sender ID/project number (Uncomment if using GCM)
+    //gcm_id: 'YOUR_GCM_ID'
+  });
+}]);

@@ -1,6 +1,6 @@
 angular.module('budgie.controllers', ['budgie.config'])
 
-.controller('AppCtrl', function($scope, $rootScope, $ionicModal, $ionicPopup, $ionicHistory, $ionicLoading, $ionicScrollDelegate, $state, $http, $localStorage, $ionicPlatform, User, Intercom, Currency, Transactions) {
+.controller('AppCtrl', function($scope, $rootScope, $window, $ionicModal, $ionicPopup, $ionicHistory, $ionicLoading, $ionicScrollDelegate, $state, $http, $localStorage, $ionicPlatform, $ionicUser, $ionicPush, User, Intercom, Currency, Transactions) {
 
   $ionicScrollDelegate.freezeScroll( true );
 
@@ -20,6 +20,38 @@ angular.module('budgie.controllers', ['budgie.config'])
   // Populate the transactions
   User.currentUser().then(function(user) {
     Transactions.fetchTransactionsFromParse(user.sessionToken);
+
+    if(window.cordova) {
+      console.log('Identifying user with Ionic');
+      var ionicUser = $ionicUser.get();
+      if(!ionicUser.user_id) {
+        // Set your user_id here, or generate a random one
+        ionicUser.user_id = user.objectId
+      };
+
+      angular.extend(ionicUser, {
+        email: user.email
+      });
+
+      $ionicUser.identify(ionicUser).then(function() {
+        console.log('Successfully identified with Ionic');
+
+        $ionicPush.register({
+          canShowAlert: true,
+          canSetBadge: true, //Can pushes update app icon badges?
+          canPlaySound: true, //Can notifications play a sound?
+          canRunActionsOnWake: true, //Can run actions outside the app,
+          onNotification: function(notification) {
+            console.log(notification);
+            return true;
+          }
+        }).then(function(deviceToken) {
+          console.log('Registered with push, device token: ' + deviceToken);
+
+          User.update({ 'deviceToken': deviceToken });
+        });
+      });
+    }
   });
 
   // Form data for the login modal
@@ -213,6 +245,10 @@ angular.module('budgie.controllers', ['budgie.config'])
           $scope.daily.todaysBudgetDisplay = '';
           $scope.getDaily();
         }, 200);
+      }
+
+      if(user.todaysDate) {
+        $scope.daily.today = user.todaysDate;
       }
     });
   });
