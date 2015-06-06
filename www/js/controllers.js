@@ -5,6 +5,7 @@ angular.module('budgie.controllers', ['budgie.config'])
   $ionicScrollDelegate.freezeScroll( true );
 
   $rootScope.sideMenuVisible = true;
+  $rootScope.registeredForPush = false;
 
   // Currency
   Currency.setCurrency('usd');
@@ -20,42 +21,48 @@ angular.module('budgie.controllers', ['budgie.config'])
   // Populate the transactions
   User.currentUser().then(function(user) {
     Transactions.fetchTransactionsFromParse(user.sessionToken);
-
-    if(window.cordova) {
-      console.log('Identifying user with Ionic');
-      var ionicUser = $ionicUser.get();
-      if(!ionicUser.user_id) {
-        // Set your user_id here, or generate a random one
-        ionicUser.user_id = user.objectId
-      };
-
-      angular.extend(ionicUser, {
-        email: user.email
-      });
-
-      $ionicUser.identify(ionicUser).then(function() {
-        console.log('Successfully identified with Ionic');
-
-        $ionicPush.register({
-          canShowAlert: true,
-          canSetBadge: true, //Can pushes update app icon badges?
-          canPlaySound: true, //Can notifications play a sound?
-          canRunActionsOnWake: true, //Can run actions outside the app,
-          onNotification: function(notification) {
-            console.log(notification);
-            return true;
-          }
-        }).then(function(deviceToken) {
-          console.log('Registered with push, device token: ' + deviceToken);
-
-          User.update({ 'deviceToken': deviceToken });
-        });
-      });
-    }
   });
 
   // Form data for the login modal
   $scope.loginData = {};
+
+  $scope.registerForPush = function() {
+    if(!$rootScope.registeredForPush)
+      console.log('scope.registerForPush');
+    if(window.cordova && !$rootScope.registeredForPush) {
+      User.currentUser().then(function(user) {
+        console.log('Identifying user with Ionic');
+        var ionicUser = $ionicUser.get();
+        if(!ionicUser.user_id) {
+          // Set your user_id here, or generate a random one
+          ionicUser.user_id = user.objectId
+        };
+
+        angular.extend(ionicUser, {
+          email: user.email
+        });
+
+        $ionicUser.identify(ionicUser).then(function() {
+          console.log('Successfully identified with Ionic');
+
+          $ionicPush.register({
+            canShowAlert: true,
+            canSetBadge: true, //Can pushes update app icon badges?
+            canPlaySound: true, //Can notifications play a sound?
+            canRunActionsOnWake: true, //Can run actions outside the app,
+            onNotification: function(notification) {
+              console.log(notification);
+              return true;
+            }
+          }).then(function(deviceToken) {
+            console.log('Registered with push, device token: ' + deviceToken);
+            $rootScope.registeredForPush = true;
+            User.update({ 'deviceToken': deviceToken });
+          });
+        });
+      });
+    }
+  }
 
   // Triggered in the login modal to close it
   $scope.closeLogin = function() {
@@ -116,6 +123,7 @@ angular.module('budgie.controllers', ['budgie.config'])
     $scope.loginData = {};
     Intercom.shutdown();
     User.logout();
+    $rootScope.registeredForPush = false;
     $ionicHistory.nextViewOptions({
       disableAnimate: true,
       disableBack: true
@@ -147,6 +155,7 @@ angular.module('budgie.controllers', ['budgie.config'])
   }
 
   $scope.getDaily = function() {
+    $scope.registerForPush();
     User.currentUser().then(function(result) {
       Currency.setCurrency(result.currency);
       $scope.daily.currency = Currency.getCurrency();
@@ -201,6 +210,7 @@ angular.module('budgie.controllers', ['budgie.config'])
       Transactions.addTransaction(user, amount, transactionLabel);
 
       $scope.getDaily();
+      $scope.daily.label = '';
 
       Intercom.trackEvent('spent-money');
 
@@ -211,6 +221,7 @@ angular.module('budgie.controllers', ['budgie.config'])
     $scope.daily.toggleFlip = !$scope.daily.toggleFlip;
     $scope.daily.toggleClose = 'yes';
     $scope.daily.amount = '';
+    $scope.daily.label = '';
     $scope.daily.hideGoalsButton = false;
   }
 
