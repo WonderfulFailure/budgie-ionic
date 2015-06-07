@@ -21,6 +21,15 @@
                 <input type="tel" placeholder="00.00" ng-model="settings.bucketGoal" ui-number-mask="settings.currency.decimalPlaces" ui-hide-group-sep />
             </label>
         </div>
+        <div class="list list-inset">
+            <label>Allowance Reminders</label>
+            <label class="toggle toggle-calm pull-right">
+               <input type="checkbox" ng-checked="settings.allowanceReminders" ng-model="settings.allowanceReminders">
+               <div class="track">
+                 <div class="handle"></div>
+               </div>
+             </label>
+        </div>
         <div class="padding">
             <input type="submit" class="button button-calm button-block button-outline" value="Save Settings" />
         </div>

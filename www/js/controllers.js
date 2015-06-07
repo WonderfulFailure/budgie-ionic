@@ -490,6 +490,7 @@ angular.module('budgie.controllers', ['budgie.config'])
     'monthlyBudget': '',
     'bucketGoal': '',
     'bucketName': '',
+    'allowanceReminders': true,
     'user': {}
   };
 
@@ -518,7 +519,7 @@ angular.module('budgie.controllers', ['budgie.config'])
           buttons: [{ text: 'Oh yeah!', type: 'button-calm' }]
         });
       }
-      User.update({ 'monthlyBudget': Currency.toStorageFormat($scope.settings.monthlyBudget), 'dailyBudget': Currency.toStorageFormat($scope.settings.monthlyBudget) / 30 });
+      User.update({ 'monthlyBudget': Currency.toStorageFormat($scope.settings.monthlyBudget), 'dailyBudget': Currency.toStorageFormat($scope.settings.monthlyBudget) / 30, 'allowanceReminders': $scope.settings.allowanceReminders });
     });
 
     User.updateBuckets({ 'bucketGoal': Currency.toStorageFormat($scope.settings.bucketGoal), 'bucketName': $scope.settings.bucketName });
