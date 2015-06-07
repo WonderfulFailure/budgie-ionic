@@ -47,7 +47,7 @@ angular.module('budgie.controllers', ['budgie.config'])
 
           $ionicPush.register({
             canShowAlert: true,
-            canSetBadge: true, //Can pushes update app icon badges?
+            canSetBadge: false, //Can pushes update app icon badges?
             canPlaySound: true, //Can notifications play a sound?
             canRunActionsOnWake: true, //Can run actions outside the app,
             onNotification: function(notification) {
@@ -195,13 +195,13 @@ angular.module('budgie.controllers', ['budgie.config'])
     });
   }
 
-  $scope.spendMoney = function(amount) {
+  $scope.spendMoney = function(amount, label) {
     if(amount === undefined || amount == 0 || amount == '0.00') return false;
 
     User.currentUser().then(function(user) {
       var amountInCents = Currency.toStorageFormat(amount);
       var newBalance = user.todaysBudget - amountInCents;
-      var transactionLabel = $scope.daily.label;
+      var transactionLabel = label;
 
       // Update just local data
       User.update({ 'todaysBudget': newBalance }, true);
