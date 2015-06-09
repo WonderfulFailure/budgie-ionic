@@ -4,7 +4,6 @@ angular.module('budgie.controllers', ['budgie.config'])
 
   $ionicScrollDelegate.freezeScroll( true );
 
-  $rootScope.sideMenuVisible = true;
   $rootScope.registeredForPush = false;
 
   // Currency
@@ -27,8 +26,6 @@ angular.module('budgie.controllers', ['budgie.config'])
   $scope.loginData = {};
 
   $scope.registerForPush = function() {
-    if(!$rootScope.registeredForPush)
-      console.log('scope.registerForPush');
     if(window.cordova && !$rootScope.registeredForPush) {
       User.currentUser().then(function(user) {
         console.log('Identifying user with Ionic');
@@ -97,6 +94,13 @@ angular.module('budgie.controllers', ['budgie.config'])
         User.fetchFromParse(result.sessionToken);
         User.fetchBucketsFromParse(result.sessionToken);
         Transactions.fetchTransactionsFromParse(result.sessionToken);
+
+        $rootScope.settingsVisible = true;
+        $ionicHistory.nextViewOptions({
+          disableBack: true,
+          disableAnimate: true
+        });
+        $state.go('app.daily', {  }, { reload: true, inherit: false, notify: true });
       })
       .error(function(error) {
         $ionicPopup.alert({
@@ -113,9 +117,7 @@ angular.module('budgie.controllers', ['budgie.config'])
       disableAnimate: true,
       disableBack: true
     });
-    $rootScope.sideMenuVisible = false;
-    $state.go('app.welcome.budget', {}, { reload: true, inherit: false, notify: true });
-    $scope.modal.hide();
+    $state.go('app.welcome.budget', {}, { reload: true, location: "replace" });
     $localStorage.completedWelcomeProcess = false;
   }
 
@@ -124,11 +126,7 @@ angular.module('budgie.controllers', ['budgie.config'])
     Intercom.shutdown();
     User.logout();
     $rootScope.registeredForPush = false;
-    $ionicHistory.nextViewOptions({
-      disableAnimate: true,
-      disableBack: true
-    });
-    $state.go('app.daily', {}, { reload: true, inherit: false, notify: true, location: true });
+    $scope.showLogin();
     $ionicHistory.clearHistory();
     $ionicHistory.clearCache();
   }
@@ -136,25 +134,17 @@ angular.module('budgie.controllers', ['budgie.config'])
 
 .controller('DailyCtrl', function($scope, $rootScope, $http, $state, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicPopup, $ionicLoading, $timeout, User, Transactions, Intercom, Currency) {
 
-  $scope.daily = { 'today': new Date(), 'toggleBounce': false, 'label_placeholder': 'What\'s this transaction for? (optional)' };
+  $scope.daily = { 'today': new Date(), 'toggleBounce': false, 'label_placeholder': 'Note (optional)' };
   $scope.daily.currency = Currency.getCurrency();
   $scope.user = {};
 
-  $rootScope.sideMenuVisible = true;
-  $ionicSideMenuDelegate.canDragContent(true);
-
   // Show the welcome wizard on first run
   if(!$localStorage.completedWelcomeProcess) {
-    $rootScope.sideMenuVisible = false;
-    $ionicSideMenuDelegate.canDragContent(false);
-    $ionicHistory.nextViewOptions({
-      disableAnimate: true,
-      disableBack: true
-    });
-    $state.go('app.welcome.budget', {}, { reload: true, inherit: false, notify: true });
+    $scope.goToWelcome();
   }
 
   $scope.getDaily = function() {
+    $rootScope.settingsVisible = true;
     $scope.registerForPush();
     User.currentUser().then(function(result) {
       Currency.setCurrency(result.currency);
@@ -233,8 +223,6 @@ angular.module('budgie.controllers', ['budgie.config'])
       if(user.todaysDate) {
         $scope.daily.today = user.todaysDate;
       }
-    }, function(error) {
-      $scope.showLogin();
     });
   });
 
@@ -392,7 +380,7 @@ angular.module('budgie.controllers', ['budgie.config'])
 
 .controller('WelcomeCtrl', function($scope, $rootScope, $http, $state, $stateParams, $localStorage, $ionicHistory, $ionicSideMenuDelegate, $ionicViewSwitcher, User, Intercom, Currency) {
 
-  $rootScope.sideMenuVisible = false;
+  $rootScope.settingsVisible = false;
   $ionicSideMenuDelegate.canDragContent(false);
 
   $scope.welcome = {};
@@ -456,7 +444,6 @@ angular.module('budgie.controllers', ['budgie.config'])
     .success(function(result) {
       User.update({ 'bucketName': $scope.welcome.bucketTitle, 'bucketGoal': $scope.welcome.bucketGoal });
       Currency.setCurrency($scope.welcome.selectedCurrency);
-      $rootScope.sideMenuVisible = true;
       $localStorage.completedWelcomeProcess = true;
       $ionicHistory.nextViewOptions({
         disableBack: true
@@ -467,11 +454,7 @@ angular.module('budgie.controllers', ['budgie.config'])
 
   $scope.skipWelcome = function() {
     $localStorage.completedWelcomeProcess = true;
-    $ionicHistory.nextViewOptions({
-      disableBack: true
-    });
-    $rootScope.sideMenuVisible = true;
-    $state.go('app.daily', {  }, { reload: true, inherit: false, notify: true });
+    $scope.showLogin();
   }
 
   $scope.changeCurrency = function(newCurrency) {
