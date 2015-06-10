@@ -15,13 +15,16 @@
     "shelljs": "^0.3.0"
   },
   "cordovaPlugins": [
-    "com.ionic.keyboard",
     "org.apache.cordova.statusbar",
     "org.apache.cordova.device",
     "org.apache.cordova.console",
     {
       "locator": "https://github.com/phonegap-build/PushPlugin.git",
       "id": "com.phonegap.plugins.PushPlugin"
+    },
+    {
+      "locator": "https://github.com/driftyco/ionic-plugins-keyboard.git",
+      "id": "com.ionic.keyboard"
     }
   ],
   "cordovaPlatforms": [

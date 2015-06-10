@@ -149,7 +149,7 @@ angular.module('budgie', ['ionic', 'ionic.service.core', 'ionic.service.push', '
     // The App ID for the server
     app_id: 'b306568f',
     // The API key all services will use for this app
-    api_key: 'c0d97b315fd074e3d2ff432431107b55a6ff732d949bb44c'
+    api_key: 'c0d97b315fd074e3d2ff432431107b55a6ff732d949bb44c',
     // The GCM project number
     gcm_id: '959643467530'
   });
