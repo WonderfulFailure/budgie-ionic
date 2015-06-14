@@ -20,6 +20,12 @@ angular.module('budgie.controllers', ['budgie.config'])
   // Populate the transactions
   User.currentUser().then(function(user) {
     Transactions.fetchTransactionsFromParse(user.sessionToken);
+
+    // Set the user's timezone from momentjs
+    if(!user.utcOffset) {
+      console.log('Adding users utcOffset');
+      User.update({ 'utcOffset': moment().utcOffset() });
+    }
   });
 
   // Form data for the login modal
@@ -437,7 +443,8 @@ angular.module('budgie.controllers', ['budgie.config'])
       'monthlyBudget': $scope.welcome.monthlyBudget,
       'dailyBudget': $scope.welcome.dailyBudget,
       'todaysBudget': $scope.welcome.todaysBudget,
-      'currency': $scope.welcome.selectedCurrency
+      'currency': $scope.welcome.selectedCurrency,
+      'utcOffset': moment().utcOffset()
     }
 
     User.signup($scope.signUpData)

@@ -70,7 +70,7 @@
                 </div>
             </div>
             <div class="padding">
-                <input type="submit" class="button button-energized button-block button-outline" value="Save" />
+                <input type="submit" class="button button-energized button-block button-outline" value="{{ goal.amount >= 0 ? 'Save' : 'Withdraw' }}" />
             </div>
         </form>
     </ion-content>
