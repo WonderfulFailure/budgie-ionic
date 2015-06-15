@@ -480,7 +480,7 @@ angular.module('budgie.controllers', ['budgie.config'])
     'bucketGoal': '',
     'bucketName': '',
     'allowanceReminders': true,
-    'reminderTime': '08:00',
+    'reminderTime': '08',
     'user': {}
   };
 
