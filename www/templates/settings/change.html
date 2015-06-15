@@ -1,35 +1,85 @@
 <ion-view view-title="">
   <ion-content class="settings change">
     <form ng-submit="updateSettings()">
-        <div class="list list-inset">
-            <label>Monthly Budget</label>
+        <div class="list">
+
             <label class="item item-input">
-                <i class="fa {{ settings.currency.icon }}"></i>
-                <input type="tel" placeholder="00.00" ng-model="settings.monthlyBudget" ui-number-mask="settings.currency.decimalPlaces" ui-hide-group-sep />
+                <label class="col col-50">Monthly Budget</label>
+                <div class="col col-50">
+                    <label class="item-input">
+                        <i class="fa {{ settings.currency.icon }}"></i>
+                        <input type="tel" placeholder="00.00" ng-model="settings.monthlyBudget" ui-number-mask="settings.currency.decimalPlaces" ui-hide-group-sep />
+                    </label>
+                </div>
             </label>
-        </div>
-        <div class="list list-inset">
-            <label>Savings Goal</label>
-            <label class="item item-input item-stacked-label">
-                <input type="text" placeholder="Taylor Swift concert tickets" ng-model="settings.bucketName">
-            </label>
-        </div>
-        <div class="list list-inset">
-            <label>Amount Needed</label>
+
+            <div class="item item-divider">
+                <label>Your Goals</label>
+            </div>
+
             <label class="item item-input">
-                <i class="fa {{ settings.currency.icon }}"></i>
-                <input type="tel" placeholder="00.00" ng-model="settings.bucketGoal" ui-number-mask="settings.currency.decimalPlaces" ui-hide-group-sep />
+                <label class="col col-50">Savings Goal</label>
+                <div class="col col-50">
+                    <input type="text" placeholder="Taylor Swift concert tickets" ng-model="settings.bucketName" style="text-align: right;">
+                </div>
             </label>
-        </div>
-        <div class="list list-inset">
-            <label>Allowance Reminders</label>
-            <label class="toggle toggle-calm pull-right">
-               <input type="checkbox" ng-checked="settings.allowanceReminders" ng-model="settings.allowanceReminders">
-               <div class="track">
-                 <div class="handle"></div>
-               </div>
-             </label>
-        </div>
+
+            <label class="item item-input">
+                <label class="col col-50">Amount Needed</label>
+                <div class="col col-50">
+                    <label class="item-input">
+                        <i class="fa {{ settings.currency.icon }}"></i>
+                        <input type="tel" placeholder="00.00" ng-model="settings.bucketGoal" style="text-align: right;" ui-number-mask="settings.currency.decimalPlaces" ui-hide-group-sep />
+                    </label>
+                </div>
+            </label>
+
+            <div class="item item-divider">
+                <label>Allowance Reminders</label>
+            </div>
+            <label class="item item-toggle">
+                <label>Send Reminders</label>
+                <label class="toggle toggle-calm pull-right">
+                   <input type="checkbox" ng-checked="settings.allowanceReminders" ng-model="settings.allowanceReminders">
+                   <div class="track">
+                     <div class="handle"></div>
+                   </div>
+                 </label>
+            </label>
+
+            <label class="item item-input item-select" ng-show="settings.allowanceReminders">
+                <div class="input-label">
+                    <label>Reminder Time</label>
+                    <p>Each day's allowance {{ settings.reminderTime }}</p>
+                </div>
+                <select ng-model="settings.reminderTime">
+                    <option value="00">12:00 AM</option>
+                    <option value="01">1:00 AM</option>
+                    <option value="02">2:00 AM</option>
+                    <option value="03">3:00 AM</option>
+                    <option value="04">4:00 AM</option>
+                    <option value="05">5:00 AM</option>
+                    <option value="06">6:00 AM</option>
+                    <option value="07">7:00 AM</option>
+                    <option value="08">8:00 AM</option>
+                    <option value="09">9:00 AM</option>
+                    <option value="10">10:00 AM</option>
+                    <option value="11">11:00 AM</option>
+                    <option value="12">12:00 PM</option>
+                    <option value="13">1:00 PM</option>
+                    <option value="14">2:00 PM</option>
+                    <option value="15">3:00 PM</option>
+                    <option value="16">4:00 PM</option>
+                    <option value="17">5:00 PM</option>
+                    <option value="18">6:00 PM</option>
+                    <option value="19">7:00 PM</option>
+                    <option value="20">8:00 PM</option>
+                    <option value="21">9:00 PM</option>
+                    <option value="22">10:00 PM</option>
+                    <option value="23">11:00 PM</option>
+                </select>
+            </label>
+
         <div class="padding">
             <input type="submit" class="button button-calm button-block button-outline" value="Save Settings" />
         </div>

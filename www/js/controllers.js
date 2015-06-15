@@ -23,7 +23,6 @@ angular.module('budgie.controllers', ['budgie.config'])
 
     // Set the user's timezone from momentjs
     if(!user.utcOffset) {
-      console.log('Adding users utcOffset');
       User.update({ 'utcOffset': moment().utcOffset() });
     }
   });
@@ -481,6 +480,7 @@ angular.module('budgie.controllers', ['budgie.config'])
     'bucketGoal': '',
     'bucketName': '',
     'allowanceReminders': true,
+    'reminderTime': '08:00',
     'user': {}
   };
 
@@ -501,6 +501,7 @@ angular.module('budgie.controllers', ['budgie.config'])
   $scope.updateSettings = function() {
     var newMonthlyBudget = Currency.toStorageFormat($scope.settings.monthlyBudget);
     var newDailyBalance = parseFloat(newMonthlyBudget / 30);
+    var reminderTime = $scope.settings.reminderTime;
     User.currentUser().then(function(user) {
       if(user.monthlyBudget != newMonthlyBudget) {
         $ionicPopup.alert({
@@ -509,7 +510,7 @@ angular.module('budgie.controllers', ['budgie.config'])
           buttons: [{ text: 'Oh yeah!', type: 'button-calm' }]
         });
       }
-      User.update({ 'monthlyBudget': Currency.toStorageFormat($scope.settings.monthlyBudget), 'dailyBudget': Currency.toStorageFormat($scope.settings.monthlyBudget) / 30, 'allowanceReminders': $scope.settings.allowanceReminders });
+      User.update({ 'monthlyBudget': Currency.toStorageFormat($scope.settings.monthlyBudget), 'dailyBudget': Currency.toStorageFormat($scope.settings.monthlyBudget) / 30, 'allowanceReminders': $scope.settings.allowanceReminders, 'reminderTime': $scope.settings.reminderTime });
     });
 
     User.updateBuckets({ 'bucketGoal': Currency.toStorageFormat($scope.settings.bucketGoal), 'bucketName': $scope.settings.bucketName });
