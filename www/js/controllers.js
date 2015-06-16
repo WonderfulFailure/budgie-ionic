@@ -25,6 +25,10 @@ angular.module('budgie.controllers', ['budgie.config'])
     if(!user.utcOffset) {
       User.update({ 'utcOffset': moment().utcOffset() });
     }
+  }, function(error) {
+    $localStorage.completedWelcomeProcess = false;
+    $localStorage.sessionToken = null;
+    $scope.showLogin();
   });
 
   // Form data for the login modal
@@ -118,7 +122,9 @@ angular.module('budgie.controllers', ['budgie.config'])
   }
 
   $scope.goToWelcome = function() {
-    $scope.closeLogin();
+    if($scope.modal) {
+      $scope.closeLogin();
+    }
     $ionicHistory.nextViewOptions({
       disableAnimate: true,
       disableBack: true
