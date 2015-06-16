@@ -118,6 +118,7 @@ angular.module('budgie.controllers', ['budgie.config'])
   }
 
   $scope.goToWelcome = function() {
+    $scope.closeLogin();
     $ionicHistory.nextViewOptions({
       disableAnimate: true,
       disableBack: true
@@ -491,6 +492,7 @@ angular.module('budgie.controllers', ['budgie.config'])
     $scope.settings.monthlyBudget = Currency.toWhole(user.monthlyBudget);
 
     $scope.settings.user = user;
+    $scope.settings.reminderTime = user.reminderTime || $scope.settings.reminderTime;
   });
 
   User.getUserBuckets().then(function(buckets) {
