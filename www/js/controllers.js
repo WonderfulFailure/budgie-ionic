@@ -450,7 +450,7 @@ angular.module('budgie.controllers', ['budgie.config'])
       'dailyBudget': $scope.welcome.dailyBudget,
       'todaysBudget': $scope.welcome.todaysBudget,
       'currency': $scope.welcome.selectedCurrency,
-      'utcOffset': moment().utcOffset()
+      'utcOffset': String(moment().utcOffset())
     }
 
     User.signup($scope.signUpData)
@@ -487,7 +487,7 @@ angular.module('budgie.controllers', ['budgie.config'])
     'bucketGoal': '',
     'bucketName': '',
     'allowanceReminders': true,
-    'reminderTime': '08',
+    'reminderTime': '00',
     'user': {}
   };
 
