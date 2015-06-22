@@ -1,6 +1,6 @@
 {
   "name": "ngstorage",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "main": "./ngStorage.js",
   "keywords": [
     "angular",
@@ -34,11 +34,11 @@
     "url": "git://github.com/gsklee/ngStorage.git"
   },
   "homepage": "https://github.com/gsklee/ngStorage",
-  "_release": "0.3.4",
+  "_release": "0.3.5",
   "_resolution": {
     "type": "version",
-    "tag": "0.3.4",
-    "commit": "9c9aa663bc432eaf4be114c057e166e3510d193e"
+    "tag": "0.3.5",
+    "commit": "1b7c981312ba94b2e8c67d15897828f3686a8b35"
   },
   "_source": "git://github.com/gsklee/ngStorage.git",
   "_target": "~0.3.0",

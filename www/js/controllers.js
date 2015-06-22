@@ -63,12 +63,22 @@ angular.module('budgie.controllers', ['budgie.config'])
           }).then(function(deviceToken) {
             console.log('Registered with push, device token: ' + deviceToken);
             $rootScope.registeredForPush = true;
-            User.update({ 'deviceToken': deviceToken });
+
+            if(deviceToken != "OK") {
+              User.update({ 'deviceToken': deviceToken });
+            }
           });
         });
       });
     }
   }
+
+  $rootScope.$on('$cordovaPush:tokenReceived', function(event, data) {
+    console.log('$cordovaPush:tokenReceived', data.token, data.platform);
+    if(deviceToken != "OK") {
+      User.update({ 'deviceToken': deviceToken });
+    }
+  });
 
   // Triggered in the login modal to close it
   $scope.closeLogin = function() {

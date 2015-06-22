@@ -89,6 +89,15 @@ function($http, $cordovaPush, $cordovaLocalNotification, $ionicApp, $ionicPushAc
       var checkPushes = setInterval(function(){
         $http(checkReq).success(function(resp){
           if (resp.messages.length > 0) {
+            var notification = {};
+            notification.alert = resp.messages[0];
+            console.warn("Calling onNotification() for a development push.  Payload will NOT be available");
+            var callbackRet = options.onNotification && options.onNotification(notification);
+            // If the custom handler returns false, don't handle this at all in our code
+            if(callbackRet === false) {
+              return;
+            }
+
             if (localNotifications) {
               console.log('$ionicPush: Attempting to send local notification.');
               window.cordova.plugins.notification.local.registerPermission(function (granted) {
@@ -142,12 +151,6 @@ function($http, $cordovaPush, $cordovaLocalNotification, $ionicApp, $ionicPushAc
 
       var callbackRet = options.onNotification && options.onNotification(notification);
 
-      // If the custom handler returns false, don't handle this at all in
-      // our code
-      if(callbackRet === false) {
-        return;
-      }
-
       if (ionic.Platform.isAndroid() && notification.event == "registered") {
         /**
          * Android handles push notification registration in a callback from the GCM service (whereas
@@ -160,6 +163,12 @@ function($http, $cordovaPush, $cordovaLocalNotification, $ionicApp, $ionicPushAc
           platform: 'android'
         });
         androidInit(notification.regid);
+      }
+
+      // If the custom handler returns false, don't handle this at all in
+      // our code
+      if(callbackRet === false) {
+        return;
       }
 
       // If we have the notification plugin, show this
@@ -253,10 +262,10 @@ function($http, $cordovaPush, $cordovaLocalNotification, $ionicApp, $ionicPushAc
           onTokenRecieved: function (token) { }
         }, options);
 
-        var user = $ionicUser.get();
+        var user = {};
 
         if (userdata) {
-          if (!userdata.user_id || !user.user_id) {
+          if (!userdata.user_id) {
             // Set your user_id here, or generate a random one
             console.warn("No user ID specified in userdata or existing model, generating generic user ID.");
             user.user_id = $ionicUser.generateGUID();
@@ -264,17 +273,20 @@ function($http, $cordovaPush, $cordovaLocalNotification, $ionicApp, $ionicPushAc
 
           angular.extend(user, userdata);
 
-          console.log('$ionicPush: Identifying user.')
+          console.log('$ionicPush: Identifying user', user.user_id);
           $ionicUser.identify(user).then(function () {
             resolve(init(options));
           });
-        } else if (!user.user_id){
-          console.log('$ionicPush: Registering anonymous user.');
-          $ionicUser.identifyAnonymous().then(function() {
-            resolve(init(options));
-          });
         } else {
-          resolve(init(options));
+          user = $ionicUser.get();
+          if (!user.user_id){
+            console.log('$ionicPush: Registering anonymous user.');
+            $ionicUser.identifyAnonymous().then(function() {
+              resolve(init(options));
+            });
+          } else {
+            resolve(init(options));
+          }
         }
       });
     },
@@ -290,18 +302,33 @@ function($http, $cordovaPush, $cordovaLocalNotification, $ionicApp, $ionicPushAc
 function($rootElement, $injector) {
   return {
     run: function(notification) {
-      if(notification.$state) {
+      var state = false;
+      var stateParams = {};
+      if (ionic.Platform.isAndroid()) {
+        if (notification.payload.payload.$state) {
+          state = notification.payload.payload.$state;
+        }
+        if (notification.payload.payload.$stateParams) {
+          try {
+            stateParams = JSON.parse(notification.payload.payload.$stateParams);
+          } catch(e) {}
+        }
+      } else if (ionic.Platform.isIOS()) {
+        if (notification.$state) {
+          state = notification.$state;
+        }
+        if (notification.$stateParams) {
+          try {
+            stateParams = JSON.parse(notification.$stateParams);
+          } catch(e) {}
+        }
+      }
+
+      if (!state) {
         // Auto navigate to state
         var injector = $rootElement.injector();
-        if(injector.has('$state')) {
-          $state = injector.get('$state');
-          var p = {};
-          try {
-            p = JSON.parse(notification.$stateParams);
-          } catch(e) {
-          }
-          $state.go(notification.$state, p);
-        }
+        $state = injector.get('$state');
+        $state.go(state, stateParams);
       }
     }
   }
