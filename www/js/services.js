@@ -615,5 +615,17 @@ angular.module('budgie.services', ['ngStorage', 'budgie.config'])
     }
   }
 
+  CurrencyService.toDisplayNoCents = function(amountInCents) {
+    amountInCents = Math.round(amountInCents);
+    if(currentCurrency) {
+      var negativeSymbol = '';
+      if(amountInCents < 0) {
+        negativeSymbol = '-';
+        amountInCents = Math.abs(amountInCents);
+      }
+      return negativeSymbol + currentCurrency.character + parseInt(amountInCents / currentCurrency.centsToWhole);
+    }
+  }
+
   return CurrencyService;
 }]);

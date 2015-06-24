@@ -422,9 +422,9 @@ angular.module('budgie.controllers', ['budgie.config'])
   $scope.welcome.moderate = '40000';
   $scope.welcome.lavish = '50000';
 
-  $scope.welcome.frugalFormatted = Currency.toDisplay($scope.welcome.frugal);
-  $scope.welcome.moderateFormatted = Currency.toDisplay($scope.welcome.moderate);
-  $scope.welcome.lavishFormatted = Currency.toDisplay($scope.welcome.lavish);
+  $scope.welcome.frugalFormatted = Currency.toDisplayNoCents($scope.welcome.frugal);
+  $scope.welcome.moderateFormatted = Currency.toDisplayNoCents($scope.welcome.moderate);
+  $scope.welcome.lavishFormatted = Currency.toDisplayNoCents($scope.welcome.lavish);
 
   if($stateParams.monthlyBudget)
     $scope.welcome.monthlyBudget = $stateParams.monthlyBudget;
@@ -487,9 +487,9 @@ angular.module('budgie.controllers', ['budgie.config'])
   $scope.changeCurrency = function(newCurrency) {
     Currency.setCurrency(newCurrency);
     $scope.welcome.currency = Currency.getCurrency();
-    $scope.welcome.frugalFormatted = Currency.toDisplay($scope.welcome.frugal);
-    $scope.welcome.moderateFormatted = Currency.toDisplay($scope.welcome.moderate);
-    $scope.welcome.lavishFormatted = Currency.toDisplay($scope.welcome.lavish);
+    $scope.welcome.frugalFormatted = Currency.toDisplayNoCents($scope.welcome.frugal);
+    $scope.welcome.moderateFormatted = Currency.toDisplayNoCents($scope.welcome.moderate);
+    $scope.welcome.lavishFormatted = Currency.toDisplayNoCents($scope.welcome.lavish);
   }
 
 })

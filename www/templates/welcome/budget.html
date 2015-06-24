@@ -13,8 +13,8 @@
       </div>
     </div>
     <div class="padding-top padding-left padding-right">
-      <p>What is your monthly budget?</p>
-      <p>(We divide this by 30 for your daily allowance)</p>
+      <p>What is your monthly budget?<br/>
+      (We divide this by 30 for your daily allowance)</p>
     </div>
     <form name="welcomeForm">
     <div class="row">
@@ -22,15 +22,11 @@
         <a class="button button-calm button-outline" ng-class="{ 'active': welcome.spendingHabits == welcome.frugal }" ng-click="welcome.spendingHabits = welcome.frugal">{{ welcome.frugalFormatted }}</a>
         <a class="button button-calm button-outline" ng-class="{ 'active': welcome.spendingHabits == welcome.moderate }" ng-click="welcome.spendingHabits = welcome.moderate">{{ welcome.moderateFormatted }}</a>
         <a class="button button-calm button-outline" ng-class="{ 'active': welcome.spendingHabits == welcome.lavish }" ng-click="welcome.spendingHabits = welcome.lavish">{{ welcome.lavishFormatted }}</a>
+        <a class="button button-calm button-outline" ng-class="{ 'active': welcome.spendingHabits == 'custom' }" ng-click="welcome.customBudgetAmount = ''; welcome.spendingHabits = 'custom';">Other</a>
       </div>
     </div>
-    <div class="padding text-center">
-      <button class="button button-small button-light button-outline" ng-click="welcome.customToggle = !welcome.customToggle; welcome.customBudgetAmount = ''">
-        Custom
-      </button>
-    </div>
     <div class="padding">
-      <div ng-show="welcome.customToggle">
+      <div ng-show="welcome.spendingHabits == 'custom'">
         <label class="item item-input">
             <i class="fa {{ welcome.currency.icon }}"></i>
             <input type="tel" id="spend" placeholder="{{ welcome.currency.placeholder }}" ng-model="welcome.customBudgetAmount" ui-number-mask="welcome.currency.decimalPlaces" ui-hide-group-sep />
