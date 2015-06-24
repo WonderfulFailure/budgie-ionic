@@ -1,21 +1,22 @@
-<ion-view view-title="Last step">
-  <ion-content scroll="false" drag-content="false">
-    <div class="padding-top padding-right padding-left">
-        We hope you enjoy saving with Budgie as much as we do. The other day, Budgie saved me from ordering pizza again by letting me know I only had $4 left for the day. Thanks Budgie!
+<ion-view>
+  <ion-content class="text-center" scroll="false" drag-content="false">
+    <div class="padding">
+        <img src="img/logo-black.png" class="logo-small" />
+        <h2>Budgie</h2>
     </div>
     <div class="padding-top padding-right padding-left">
-        We use push notifications to let you know when your allowance rolls over.  You can change this via settings.
+        Be sure to allow push notifications so that you can start each day knowing what to spend!
     </div>
     <div class="list list-inset">
         <label class="item item-input">
-            <input type="email" name="username" placeholder="Email address" ng-model="welcome.username" />
+            <input type="email" name="username" placeholder="Enter your email address" ng-model="welcome.username" />
         </label>
         <label class="item item-input">
-            <input type="password" name="password" placeholder="Password" ng-model="welcome.password" />
+            <input type="password" name="password" placeholder="Enter a password" ng-model="welcome.password" />
         </label>
     </div>
     <div class="padding-horizontal">
-      <input type="submit" class="button button-calm button-block button-outline" ng-click="processSignupForm()" value="Start Saving"/>
+      <input type="submit" class="button button-calm button-block button-outline" ng-click="processSignupForm()" value="Start Saving" />
     </div>
   </ion-content>
 </ion-view>

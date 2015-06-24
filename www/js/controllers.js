@@ -139,7 +139,7 @@ angular.module('budgie.controllers', ['budgie.config'])
       disableAnimate: true,
       disableBack: true
     });
-    $state.go('app.welcome.budget', {}, { reload: true, location: "replace" });
+    $state.go('app.welcome.budgie', {}, { reload: true, location: "replace" });
     $localStorage.completedWelcomeProcess = false;
   }
 
@@ -473,6 +473,10 @@ angular.module('budgie.controllers', ['budgie.config'])
       });
       $state.go('app.daily', {}, { reload: true, inherit: false, notify: true });
     });
+  }
+
+  $scope.beginWelcome = function() {
+    $state.go('app.welcome.budget', {}, { reload: true, location: "replace" });
   }
 
   $scope.skipWelcome = function() {

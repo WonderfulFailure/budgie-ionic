@@ -7742,6 +7742,12 @@ input[type="tel"] {
 .text-muted {
   color: #ddd; }
 
+.logo {
+  width: 50px; }
+
+.logo-small {
+  width: 30px; }
+
 /* entire container, keeps perspective */
 .flip-container {
   -webkit-perspective: 1000;

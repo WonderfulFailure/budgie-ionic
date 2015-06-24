@@ -1,7 +1,8 @@
-<ion-view view-title="Welcome to Budgie">
-  <ion-content>
+<ion-view>
+  <ion-content class="text-center">
     <div class="padding">
-      <p>Budgie tells you how much money you can spend each day. Anything left unspent carries over to the next day! Bwraaaak!</p>
+      <img src="img/logo-black.png" class="logo-small" />
+      <h2>Budgie</h2>
     </div>
     <div class="padding-left padding-right">
       <p>What does your currency look like?</p>
@@ -12,7 +13,8 @@
       </div>
     </div>
     <div class="padding-top padding-left padding-right">
-      <p>On average, I want my monthly budget to be…</p>
+      <p>What is your monthly budget?</p>
+      <p>(We divide this by 30 for your daily allowance)</p>
     </div>
     <form name="welcomeForm">
     <div class="row">
@@ -39,8 +41,7 @@
       This means you'll have <strong>{{ welcome.monthlyToDailyDisplay }}</strong> per day.
     </div>
     <div class="padding">
-      <input type="submit" class="button button-calm button-block button-outline" ng-click="processSetupForm(welcomeForm)" value="Continue Setup"/>
-      <input type="submit" class="button button-block button-outline" ng-click="skipWelcome()" value="Already a member?" />
+      <input type="submit" class="button button-calm button-block button-outline" ng-click="processSetupForm(welcomeForm)" value="One more step" />
     </div>
     </form>
   </ion-content>

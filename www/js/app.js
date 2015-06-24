@@ -69,6 +69,16 @@ angular.module('budgie', ['ionic', 'ionic.service.core', 'ionic.service.push', '
     }
   })
 
+  .state('app.welcome.budgie', {
+    url: "/budgie",
+    views: {
+      'welcomeContent': {
+        templateUrl: "templates/welcome/budgie.html",
+        controller: 'WelcomeCtrl'
+      }
+    }
+  })
+
   .state('app.welcome.budget', {
     url: "/budget",
     views: {
