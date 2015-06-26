@@ -7748,6 +7748,9 @@ input[type="tel"] {
 .logo-small {
   width: 30px; }
 
+#login .list {
+  margin-top: 0; }
+
 /* entire container, keeps perspective */
 .flip-container {
   -webkit-perspective: 1000;
